@@ -8,17 +8,17 @@ module.exports = function(done) {
       {
         name: 'PC',
         shortName: 'PC',
-        gamerUrlPath: null
+        gamerProfileUrlPrefix: null
       },
       {
         name: 'PlayStation 4',
         shortName: 'PS4',
-        gamerUrlPath: 'https://my.playstation.com/'
+        gamerProfileUrlPrefix: 'https://my.playstation.com/'
       },
       {
         name: 'Xbox One',
         shortName: 'XB1',
-        gamerUrlPath: 'https://account.xbox.com/en-US/Profile?gamerId='
+        gamerProfileUrlPrefix: 'https://account.xbox.com/en-US/Profile?gamerId='
       }
     ];
 

@@ -1,6 +1,5 @@
 'use strict';
-// var throng = require('throng');
-const WORKERS = process.env.CONCURRENT_WORKERS;
+require('newrelic');
 const path = require('path');
 
 const start = function() {
@@ -63,4 +62,4 @@ const start = function() {
 
 };
 
-module.exports = start();
+start();
