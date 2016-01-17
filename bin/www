@@ -1,4 +1,4 @@
-var throng = require('throng');
+// var throng = require('throng');
 var WORKERS = process.env.CONCURRENT_WORKERS;
 
 var start = function() {
@@ -61,7 +61,4 @@ var start = function() {
 
 };
 
-module.exports = throng(start, {
-  workers: WORKERS,
-  lifetime: Infinity
-});
+start();
