@@ -4,10 +4,10 @@ const Schema = mongoose.Schema;
 const Types = Schema.Types;
 const trackable = require('mongoose-trackable');
 
-let GameSystem = new Schema({
+let Platform = new Schema({
   shortName: Types.String,
   name: Types.String,
-  gamerUrlPath: Types.String
+  gamerProfileUrlPrefix: Types.String
 }).plugin(trackable);
 
-module.exports = mongoose.model('GameSystem', GameSystem);
+module.exports = mongoose.model('Platform', Platform);

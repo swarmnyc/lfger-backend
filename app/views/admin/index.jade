@@ -1,0 +1,15 @@
+extends ../layout
+
+block content
+  .container
+    .row: h1 Login
+    .row
+      form(action="/login" method="post")
+        .col-xs-12
+          label Username/Email
+          input(type="text" name="username")
+        .col-xs-12
+          label Password
+          input(type="password" name="password")
+        .col-xs-12
+          input(type="submit" value="Login")

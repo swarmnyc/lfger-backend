@@ -5,10 +5,10 @@ const Types = Schema.Types;
 const trackable = require('mongoose-trackable');
 
 let LFG = new Schema({
-  gameSystem: { type: Types.ObjectId, required: true, ref: 'GameSystem' },
+  platform: { type: Types.ObjectId, required: true, ref: 'Platform' },
   game: { type: Types.String, required: true },
-  gamerTag: { type: Types.String, required: true },
-  message: Types.String,
+  gamerId: { type: Types.String, required: true },
+  message: { type: Types.String },
   willPostTo: {
     facebook: { type: Types.Boolean, default: false },
     twitter: { type: Types.Boolean, default: false }

@@ -6,7 +6,9 @@
   },
   "private": true,
   "scripts": {
-    "start": "nf start"
+    "start": "node ./bin/www",
+    "dev": "DEBUG=lfger-backend node ./bin/www",
+    "test": "mocha test/ --delay"
   },
   "respository": {
     "type": "git",
@@ -21,7 +23,6 @@
     "express": "~4.13.1",
     "express-session": "1.13.0",
     "foreman": "1.4.1",
-    "forever-monitor": "1.7.0",
     "helmet": "1.1.0",
     "jade": "~1.11.0",
     "mongoose": "4.3.6",
@@ -37,7 +38,10 @@
   },
   "devDependencies": {
     "chai": "3.4.1",
+    "chai-fuzzy": "1.6.0",
     "chai-http": "1.0.0",
+    "chai-things": "0.2.0",
+    "faker": "3.0.1",
     "mocha": "2.3.4"
   }
 }

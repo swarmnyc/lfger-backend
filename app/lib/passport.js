@@ -5,22 +5,26 @@ const AdminUser = require('../models/admin-user');
 
 module.exports = function(app) {
   passport.use(new LocalStrategy(
-  function(email, password, callback) {
-      AdminUser.findOne({ email: email }).exec(function(err, user) {
+  function(username, password, callback) {
+      AdminUser.findOne({ email: username }).exec(function(err, user) {
         if (err) {
+          app.logger.error('Validation failed for ' + username + ': ' + err);
           return callback(err);
         }
 
         if (!user) {
+          app.logger.error('Validation failed for ' + username + ': no such user');
           return callback(null, false);
         }
 
         user.comparePassword(password, function(err, isMatch) {
           if (err) {
+            app.logger.error('Validation failed for ' + username + ': password validation failed because ' + err);
             return callback(err);
           }
 
           if (!isMatch) {
+            app.logger.error('Validation failed for ' + username + ': invalid password');
             return callback(null, false);
           }
 
@@ -30,7 +34,7 @@ module.exports = function(app) {
   }));
 
   passport.serializeUser(function(user, callback) {
-    callback(null, user._id.toString());
+    callback(null, user._id);
   });
 
   passport.deserializeUser(function(id, callback) {

@@ -1,15 +1,16 @@
 'use strict';
 const express = require('express');
 const async = require('async');
+const _ = require('underscore');
 
-module.exports = function(app) {
+module.exports = function() {
   const router = express.Router();
 
   /**
    * LFG Query Param Middleware
    */
   router.param('lfg', function(req, res, next, id) {
-    req.db.LFG.findById(id).exec(function(err, lfg) {
+    req.db.LFG.findById(id).populate('platform').exec(function(err, lfg) {
       if (err) {
         return next(err);
       }
@@ -23,9 +24,18 @@ module.exports = function(app) {
    * Get a list of LFGs
    */
   router.get('/', function(req, res) {
-    req.db.LFG.find().populate('system').exec(function(err, lfgs) {
+    let query = {};
+    let options = ['game', 'platform', 'gamerId'];
+
+    _.each(options, function(option) {
+      if (req.query[option] && req.query[option] !== '') {
+        query[option] = req.query[option];
+      }
+    });
+
+    req.db.LFG.find(query).populate('platform').exec(function(err, lfgs) {
       if (err) {
-        return res.status(403).json({ error: err.message });
+        return res.status(403).json({ success: false, error: err.message });
       }
 
       res.status(200).json(lfgs);

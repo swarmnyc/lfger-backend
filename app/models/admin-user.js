@@ -14,10 +14,7 @@ const validateEmail = function(email) {
 
 let AdminUser = new Schema({
   name: { type: Types.String },
-  email: { type: Types.String, validate: {
-    validator: validateEmail,
-    message: '{VALUE} is not a valid email address'
-  }},
+  email: { type: Types.String, validate: validateEmail },
   password: { type: Types.String, required: true }
 }).plugin(trackable);
 
@@ -45,13 +42,7 @@ AdminUser.pre('save', function(next) {
 });
 
 AdminUser.methods.comparePassword = function(passwordInput, callback) {
-  bcrypt.compare(passwordInput, this.password, function(err, isMatch) {
-    if (err) {
-      return callback(err);
-    }
-
-    callback(null, isMatch);
-  });
+  bcrypt.compare(passwordInput, this.password, callback);
 };
 
 module.exports = mongoose.model('AdminUser', AdminUser);

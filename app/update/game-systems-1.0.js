@@ -1,6 +1,6 @@
 'use strict';
 
-const GameSystem = require('../models/game-system');
+const Platform = require('../models/platform');
 const async = require('async');
 
 module.exports = function(done) {
@@ -18,12 +18,12 @@ module.exports = function(done) {
       {
         name: 'Xbox One',
         shortName: 'XB1',
-        gamerUrlPath: 'https://account.xbox.com/en-US/Profile?gamerTag='
+        gamerUrlPath: 'https://account.xbox.com/en-US/Profile?gamerId='
       }
     ];
 
     async.each(data, function(item, callback) {
-      let system = new GameSystem(item);
+      let system = new Platform(item);
       system.save(callback);
     }, done);
 };

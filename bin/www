@@ -1,3 +1,6 @@
+var throng = require('throng');
+var WORKERS = process.env.CONCURRENT_WORKERS;
+
 var start = function() {
   var app = require('../app/app');
   var port = normalizePort(process.env.PORT || '3000');

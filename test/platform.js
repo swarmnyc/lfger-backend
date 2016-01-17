@@ -6,29 +6,40 @@ const chaiHttp = require('chai-http');
 const server = require('../app/app');
 const should = chai.should();
 
-const GameSystem = require('../app/models/game-system');
+const Platform = require('../app/models/platform');
 const LFG = require('../app/models/lfg');
 const AdminUser = require('../app/models/admin-user');
 
 const adminUserFactory = function() {
-  return new AdminUser({
-    email: 'admin@lfger.com',
-    password: 'supercool'
+  return new Promise(function(resolve, reject) {
+    let user = new AdminUser({
+      name: 'John Doe',
+      email: 'admin@lfger.com',
+      password: 'supercool'
+    });
+
+    user.save(function(err, doc) {
+      if (err) {
+        return reject(err);
+      }
+
+      return resolve(doc);
+    });
   });
 };
 
-const gameSystemFactory = function() {
-  return new GameSystem({
+const platformFactory = function() {
+  return new Platform({
     name: 'PlayStation 4',
     shortName: 'PS4',
-    gamerUrlPath: 'https://my.playstation.com/'
+    gamerProfileUrlPrefix: 'https://my.playstation.com/'
   });
 };
 
-describe('GameSystems', function() {
-    it('should list ALL GameSystems on /game-systems GET', function(done) {
+describe('Platforms', function() {
+    it('should list ALL Platforms on /platforms GET', function(done) {
       chai.request(server)
-        .get('/game-systems')
+        .get('/platforms')
         .end(function(err, res) {
           res.should.have.status(200);
           res.should.be.json;
@@ -36,11 +47,11 @@ describe('GameSystems', function() {
           done();
         });
     });
-    it('should list a SINGLE GameSystem on /game-systems/<id> GET', function(done) {
-      let newSystem = gameSystemFactory();
+    it('should list a SINGLE Platform on /platforms/<id> GET', function(done) {
+      let newSystem = platformFactory();
       newSystem.save().then(function(system) {
         chai.request(server)
-          .get('/game-systems/' + system._id)
+          .get('/platforms/' + system._id)
           .end(function(err, res) {
             res.should.have.status(200);
             res.should.be.json;
@@ -48,24 +59,29 @@ describe('GameSystems', function() {
             res.body.should.have.property('_id');
             res.body.should.have.property('shortName');
             res.body.should.have.property('name');
-            res.body.should.have.property('gamerUrlPath');
+            res.body.should.have.property('gamerProfileUrlPrefix');
             res.body._id.should.equal(system._id.toString());
-            res.body.shortName.should.equal('PS4');
-            res.body.name.should.equal('PlayStation 4');
+            res.body.shortName.should.equal(system.shortName);
+            res.body.name.should.equal(system.name);
             done();
           });
         });
     });
-    it('should add a SINGLE GameSystem on /game-systems POST', function(done) {
-      let newAdminUser = adminUserFactory();
-      newAdminUser.save().then(function(adminUser) {
-        chai.request(server)
+    it('should add a SINGLE Platform on /platforms POST', function(done) {
+      let demoPlatform = {
+        name: 'Xbox One',
+        shortName: 'XB1',
+        gamerProfileUrlPrefix: 'https://www.xbox.com/'
+      };
+
+      adminUserFactory().then(function(adminUser) {
+        chai.request.agent(server)
           .post('/login')
-          .send({ username: adminUser.email, password: adminUser.password })
-          .end(function(err, response) {
-            chai.request(server)
-              .post('/game-systems')
-              .send({ name: 'Xbox One', shortName: 'XB1', gamerUrlPath: 'https://www.xbox.com/' })
+          .send({ username: adminUser.email, password: 'supercool' })
+          .then(function(response) {
+            chai.request.agent(server)
+              .post('/platforms')
+              .send(demoPlatform)
               .end(function(err, res) {
                 res.should.have.status(200);
                 res.should.be.json;
@@ -73,21 +89,23 @@ describe('GameSystems', function() {
                 res.body.should.have.property('_id');
                 res.body.should.have.property('shortName');
                 res.body.should.have.property('name');
-                res.body.should.have.property('gamerUrlPath');
-                res.body.name.should.equal('Xbox One');
-                res.body.shortName.should.equal('XB1');
-                res.body.gamerUrlPath.should.equal('https://www.xbox.com/');
+                res.body.should.have.property('gamerProfileUrlPrefix');
+                res.body.name.should.equal(demoPlatform.name);
+                res.body.shortName.should.equal(demoPlatform.shortName);
+                res.body.gamerProfileUrlPrefix.should.equal(demoPlatform.gamerProfileUrlPrefix);
                 done();
             });
+        }).catch(function(err) {
+          console.error(err);
         });
       });
     });
-    it('should update a SINGLE GameSystem on /game-systems/<id> PUT', function(done) {
+    it('should update a SINGLE Platform on /platforms/<id> PUT', function(done) {
       chai.request(server)
-        .get('/game-systems')
+        .get('/platforms')
         .end(function(err, res) {
           chai.request(server)
-            .put('/game-systems/' + res.body[0]._id)
+            .put('/platforms/' + res.body[0]._id)
             .send({ name: 'TurboGrafx 16' })
             .end(function(error, response) {
               response.should.have.status(200);
@@ -95,19 +113,19 @@ describe('GameSystems', function() {
               response.body.should.be.a('object');
               response.body.should.have.property('_id');
               response.body.should.have.property('shortName');
-              response.body.should.have.property('gamerUrlPath');
+              response.body.should.have.property('gamerProfileUrlPrefix');
               response.body.should.have.property('name');
               response.body.name.should.equal('TurboGrafx 16');
               done();
             });
         });
     });
-    it('should delete a SINGLE LFG on /game-systems/<id> DELETE', function(done) {
+    it('should delete a SINGLE LFG on /platforms/<id> DELETE', function(done) {
       chai.request(server)
-        .get('/game-systems')
+        .get('/platforms')
         .end(function(err, res) {
           chai.request(server)
-            .delete('/game-systems/'+res.body[0]._id)
+            .delete('/platforms/'+res.body[0]._id)
             .end(function(error, response) {
               response.should.have.status(200);
               response.should.be.json;

@@ -1,4 +1,5 @@
 'use strict';
+require('dotenv').load();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -14,7 +15,6 @@ const winston = require('winston');
 
 const app = express();
 app.logger = new (winston.Logger)({
-  level: 'error',
   transports: [
     new (winston.transports.File)({ filename: 'error.log' }),
     new (winston.transports.Console)()
