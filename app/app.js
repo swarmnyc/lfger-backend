@@ -2,6 +2,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const _ = require('underscore');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
@@ -73,7 +74,37 @@ const bindModels = function(app) {
   });
 };
 
+const applyUpdates = function(app) {
+  const updatesPath = path.resolve(__dirname, 'update');
+  let files = fs.readdirSync(updatesPath);
 
+  debug('Finding updates...');
+
+  return app.db.Update.find().exec(function(err, updates) {
+    return files.forEach(function(file) {
+      let update;
+
+      if (path.extname(file) !== '.js' || _.findWhere(updates, { filename: path.basename(file) })) {
+        return;
+      }
+
+      update = require(path.resolve(updatesPath, file))(function(err) {
+        let record;
+
+        if (err) {
+          return;
+        }
+
+        record = new app.db.Update({
+          filename: file
+        });
+
+        return record.save();
+      });
+    });
+  });
+
+};
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -94,6 +125,7 @@ bindMiddleware(app);
 
 app.use(app.middleware.db);
 bindRoutes(app);
+applyUpdates(app);
 
 // catch 404 and forward to error handler
 app.use(function(req, res) {
