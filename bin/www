@@ -1,7 +1,3 @@
-var debug = require('debug')('lfger-backend:server');
-var WORKERS = process.env.CONCURRENT_WORKERS;
-var throng = require('throng');
-
 var start = function() {
   var app = require('../app/app');
   var port = normalizePort(process.env.PORT || '3000');
@@ -31,6 +27,7 @@ var start = function() {
    */
 
   function onError(error) {
+    app.logger.error(error);
     if (error.syscall !== 'listen') {
       throw error;
     }
@@ -56,9 +53,7 @@ var start = function() {
    */
 
   function onListening() {
-    if (process.env.ENVIRONMENT === 'development') {
-      debug('Listening on ' + port);
-    }
+    app.logger.info('Listening on ' + port);
   }
 
 };

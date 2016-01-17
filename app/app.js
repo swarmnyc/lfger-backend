@@ -10,8 +10,16 @@ const helmet = require('helmet');
 const mongoose = require('mongoose');
 const debug = require('debug')('lfger-backend');
 const lfgUtils = require(path.resolve(__dirname, 'lib', 'utils'));
+const winston = require('winston');
 
 const app = express();
+app.logger = new (winston.Logger)({
+  level: 'error',
+  transports: [
+    new (winston.transports.File)({ filename: 'error.log' }),
+    new (winston.transports.Console)()
+  ]
+});
 
 /* Connect to MongoDB */
 const connect = function() {
@@ -33,7 +41,7 @@ const bindRoutes = function(app) {
       return;
     }
 
-    debug('Binding route: ' + '/' + path.basename(file, '.js'));
+    app.logger.info('Binding route: ' + '/' + path.basename(file, '.js'));
     route = require(path.resolve(routesPath, file));
     app.use('/' + path.basename(file, '.js'), route(app));
   });
@@ -49,7 +57,7 @@ const bindMiddleware = function(app) {
       return;
     }
 
-    debug('Loading middleware from ' + file);
+    app.logger.info('Loading middleware from ' + file);
     app.middleware[lfgUtils.toCamelCase(path.basename(file, '.js'))] = require(path.resolve(middlewarePath, file))(app);
   });
 };
@@ -68,7 +76,7 @@ const bindModels = function(app) {
     }
 
     model = require(path.resolve(modelsPath, file));
-    debug('Importing ' + model.modelName + '...');
+    app.logger.info('Importing ' + model.modelName + '...');
 
     app.db[model.modelName] = model;
   });
@@ -78,7 +86,7 @@ const applyUpdates = function(app) {
   const updatesPath = path.resolve(__dirname, 'update');
   let files = fs.readdirSync(updatesPath);
 
-  debug('Finding updates...');
+  app.logger.info('Finding updates...');
 
   return app.db.Update.find().exec(function(err, updates) {
     return files.forEach(function(file) {
@@ -127,6 +135,10 @@ app.use(app.middleware.db);
 bindRoutes(app);
 applyUpdates(app);
 
+app.get('/', function(req, res) {
+  res.render('index');
+});
+
 // catch 404 and forward to error handler
 app.use(function(req, res) {
   res.status(404).send();
@@ -141,6 +153,7 @@ if (app.get('env') === 'development' || app.get('env') === 'test') {
       message: err.message,
       error: err
     });
+    app.logger.error(err);
   });
 }
 
@@ -152,6 +165,7 @@ app.use(function(err, req, res) {
     message: err.message,
     error: {}
   });
+  app.logger.error(err);
 });
 
 module.exports = app;

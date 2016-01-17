@@ -1,1 +1,1 @@
-web: DEBUG=lfger-backend node --use_strict bin/www
+web: node bin/www

@@ -21,6 +21,7 @@
     "express": "~4.13.1",
     "express-session": "1.13.0",
     "foreman": "1.4.1",
+    "forever-monitor": "1.7.0",
     "helmet": "1.1.0",
     "jade": "~1.11.0",
     "mongoose": "4.3.6",
@@ -31,7 +32,8 @@
     "serve-favicon": "~2.3.0",
     "throng": "1.0.1",
     "underscore": "1.8.3",
-    "validator": "4.5.0"
+    "validator": "4.5.0",
+    "winston": "2.1.1"
   },
   "devDependencies": {
     "chai": "3.4.1",
