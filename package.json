@@ -6,8 +6,8 @@
   },
   "private": true,
   "scripts": {
-    "start": "node ./bin/www",
-    "dev": "DEBUG=lfger-backend node ./bin/www",
+    "start": "node server.js",
+    "dev": "DEBUG=lfger-backend node server.js",
     "test": "mocha test/ --delay"
   },
   "respository": {

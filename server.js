@@ -1,16 +1,18 @@
+'use strict';
 // var throng = require('throng');
-var WORKERS = process.env.CONCURRENT_WORKERS;
+const WORKERS = process.env.CONCURRENT_WORKERS;
+const path = require('path');
 
-var start = function() {
-  var app = require('../app/app');
-  var port = normalizePort(process.env.PORT || '3000');
+const start = function() {
+  const app = require(path.resolve(__dirname, 'app', 'app'));
+  let port = normalizePort(process.env.PORT || '3000');
 
   app.set('port', port);
   app.on('error', onError);
   app.listen(port, onListening);
 
   function normalizePort(val) {
-    var port = parseInt(val, 10);
+    let port = parseInt(val, 10);
 
     if (isNaN(port)) {
       // named pipe
@@ -61,4 +63,4 @@ var start = function() {
 
 };
 
-start();
+module.exports = start();
