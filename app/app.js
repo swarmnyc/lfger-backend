@@ -1,5 +1,4 @@
 'use strict';
-require('dotenv').load();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -12,6 +11,10 @@ const mongoose = require('mongoose');
 const debug = require('debug')('lfger-backend');
 const lfgUtils = require(path.resolve(__dirname, 'lib', 'utils'));
 const winston = require('winston');
+
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
+  require('dotenv').load();
+}
 
 const app = express();
 app.logger = new (winston.Logger)({
