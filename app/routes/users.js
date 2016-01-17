@@ -16,15 +16,15 @@ module.exports = function(app) {
     });
   });
 
-  router.get('/', app.middleware.ensureLogin, function(req, res) {
-    req.db.User.find().exec(function(err, users) {
-      if (err) {
-        return res.status(403).json({ success: false, error: err.message });
-      }
-
-      return res.status(200).json(users);
-    });
-  });
+  // router.get('/', app.middleware.ensureLogin, function(req, res) {
+  //   req.db.User.find().exec(function(err, users) {
+  //     if (err) {
+  //       return res.status(403).json({ success: false, error: err.message });
+  //     }
+  //
+  //     return res.status(200).json(users);
+  //   });
+  // });
 
   router.post('/', function(req, res) {
     let data = req.body;
