@@ -1,5 +1,6 @@
 'use strict';
 const express = require('express');
+const session = require('express-session');
 const path = require('path');
 const fs = require('fs');
 const _ = require('underscore');
@@ -17,6 +18,15 @@ if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging')
 }
 
 const app = express();
+const RedisStore = require('connect-redis')(session);
+const redis = new RedisStore({
+  host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT,
+  pass: process.env.REDIS_KEY || null,
+  ttl: 60*60*24,
+  no_ready_check: true
+});
+
 app.logger = new (winston.Logger)({
   transports: [
     new (winston.transports.File)({ filename: 'error.log' }),
@@ -128,7 +138,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(require('express-session')({ secret: 'asdjflkajsdfkljalkvjalkdjfeowrj34u9-4iojlsdfljk', resave: false, saveUninitialized: false }));
+app.use(session({ secret: 'asdjflkajsdfkljalkvjalkdjfeowrj34u9-4iojlsdfljk', store: redis, resave: false, saveUninitialized: false }));
 app.passport = require(path.resolve(__dirname, 'lib', 'passport'))(app);
 
 bindModels(app);
