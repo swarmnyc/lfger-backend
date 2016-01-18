@@ -3,7 +3,7 @@ const express = require('express');
 const async = require('async');
 const _ = require('underscore');
 
-module.exports = function() {
+module.exports = function(app) {
   const router = express.Router();
 
   /**
@@ -23,7 +23,7 @@ module.exports = function() {
   /**
    * Get a list of LFGs
    */
-  router.get('/', function(req, res) {
+  router.get('/', app.middleware.auth.bearer, function(req, res) {
     let query = {};
     let options = ['game', 'platform', 'gamerId'];
 
@@ -45,7 +45,7 @@ module.exports = function() {
   /**
    * Create a new LFG
    */
-  router.post('/', function(req, res) {
+  router.post('/', app.middleware.auth.bearer, function(req, res) {
     let data = req.body;
     let lfg;
 
@@ -67,14 +67,14 @@ module.exports = function() {
   /**
    * Get a specific LFG
    */
-  router.get('/:lfg', function(req, res) {
+  router.get('/:lfg', app.middleware.auth.bearer, function(req, res) {
     return res.status(200).json(req.models.lfg);
   });
 
   /**
    * Update LFG
    */
-  router.put('/:lfg', function(req, res) {
+  router.put('/:lfg', app.middleware.auth.bearer, function(req, res) {
     let data = req.body;
     let lfg = req.models.lfg;
 
@@ -96,7 +96,7 @@ module.exports = function() {
   /**
    * Remove LFG
    */
-  router.delete('/:lfg', function(req, res) {
+  router.delete('/:lfg', app.middleware.auth.bearer, function(req, res) {
     req.models.lfg.remove().then(function() {
       res.status(200).json({ success: true });
     }).catch(function(err) {
