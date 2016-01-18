@@ -31,7 +31,6 @@ const LFGHelper = (function() {
   LFGHelper.prototype.findLFGsByPlatform = function(searchString, options, callback) {
     const query = function(options, callback) {
       let mongoQuery;
-      let search;
 
       /* Builds query string to avoid typecast errors */
       const buildSearch = function(searchString) {
@@ -79,7 +78,7 @@ const LFGHelper = (function() {
         cb();
       };
 
-      search = buildSearch(searchString).then(function() {
+      buildSearch(searchString).then(function(search) {
         mongoQuery = LFGModel.find(search);
 
         async.forEachOf(options, applyOpts, function() {
@@ -99,9 +98,14 @@ const LFGHelper = (function() {
       options = {};
     }
 
+    if (typeof options === 'undefined') {
+      options = {};
+    }
+
     /* Apply default options */
     _.defaults(options, defaults);
 
+    /* Return a Promise object if no callback was passed */
     if (typeof callback === 'undefined') {
       return new Promise(function(resolve, reject) {
         query(options, function(err, results) {

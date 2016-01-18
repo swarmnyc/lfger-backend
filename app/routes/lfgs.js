@@ -26,7 +26,7 @@ module.exports = function(app) {
   router.get('/', function(req, res) {
     const renderResponse = function(err, lfgs) {
       if (err) {
-        return res.status(403).json({ success: false, error: err.message });
+        return res.status(403).json({ success: false, error: err });
       }
 
       res.status(200).json(lfgs);
@@ -39,14 +39,20 @@ module.exports = function(app) {
       return app.helpers.lfg.findLFGsByPlatform(req.query.platform, renderResponse);
     }
 
-    _.each(options, function(option) {
+    async.each(options, function(option, cb) {
+      if (Object.keys(req.query).length === 0) {
+        return cb();
+      }
+
       if (req.query[option] && req.query[option] !== '') {
         /* If query is a string, convert to RegExp for case insensitive search */
-        query[option] = typeof req.query[option] === 'string' ? new RegExp(req.query[option], 'i') : req.query[option];
+        query[option] = (typeof req.query[option] === 'string' ? new RegExp(req.query[option], 'i') : req.query[option]);
       }
-    });
 
-    req.db.LFG.find(query).populate('platform').sort(app.LFGER_CONFIG.QUERY_SORT).exec(renderResponse);
+      cb();
+    }, function() {
+      req.db.LFG.find(query).populate('platform').sort(app.LFGER_CONFIG.QUERY_SORT).exec(renderResponse);
+    });
   });
 
   /**
