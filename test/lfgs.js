@@ -124,6 +124,9 @@ describe('LFGs', function() {
           res.should.have.status(200);
           res.should.be.json;
           res.body.should.be.a('array');
+          res.body[0].should.be.a('object');
+          res.body[0].should.have.property('platform');
+          res.body[0].platform._id.should.equal(platform._id.toString());
           /* TODO: Figure out how to test that platforms match for all elements in array */
           done();
         });
@@ -137,7 +140,7 @@ describe('LFGs', function() {
           res.should.have.status(200);
           res.should.be.json;
           res.body.should.be.a('array');
-          /* TODO: Figure out how to test that platforms match for all elements in array */
+          res.body[0].platform.name.should.equal(platform.name);
           done();
         });
     });
@@ -150,7 +153,7 @@ describe('LFGs', function() {
           res.should.have.status(200);
           res.should.be.json;
           res.body.should.be.a('array');
-          /* TODO: Figure out how to test that platforms match for all elements in array */
+          res.body[0].platform.name.should.equal(platform.name);
           done();
         });
     });
@@ -163,6 +166,7 @@ describe('LFGs', function() {
           res.should.have.status(200);
           res.should.be.json;
           res.body.should.be.a('array');
+          res.body[0].platform.name.should.equal(platform.name);
           /* TODO: Figure out how to test that platforms match for all elements in array */
           done();
         });

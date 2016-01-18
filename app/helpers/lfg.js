@@ -68,7 +68,11 @@ const LFGHelper = (function() {
       /* Iterates through options object and applies them to the query */
       const applyOpts = function(optValue, optKey, cb) {
         if (typeof optValue !== 'undefined') {
-          mongoQuery[optKey] = optValue;
+          if (optKey === 'populate') {
+            mongoQuery.populate(optValue);
+          } else {
+            mongoQuery.options[optKey] = optValue;
+          }
         }
 
         cb();
