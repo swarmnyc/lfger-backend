@@ -217,6 +217,48 @@ describe('LFGs', function() {
         });
     });
   });
+  it('should add a SINGLE LFG on /lfgs POST using platform.shortName', function(done) {
+    Platform.findOne().exec(function(err, system) {
+      chai.request(server)
+        .post('/lfgs')
+        .send({ gamerId: 'methodd1', game: 'ESO', message: 'Let\'s kill shit.', platform: system.shortName })
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('object');
+          res.body.should.have.property('_id');
+          res.body.should.have.property('platform');
+          res.body.should.have.property('gamerId');
+          res.body.should.have.property('game');
+          res.body.gamerId.should.equal('methodd1');
+          res.body.game.should.equal('ESO');
+          res.body.message.should.equal('Let\'s kill shit.');
+          res.body.platform.should.equal(system._id.toString());
+          done();
+        });
+    });
+  });
+  it('should add a SINGLE LFG on /lfgs POST using platform.name', function(done) {
+    Platform.findOne().exec(function(err, system) {
+      chai.request(server)
+        .post('/lfgs')
+        .send({ gamerId: 'methodd1', game: 'ESO', message: 'Let\'s kill shit.', platform: system.name })
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('object');
+          res.body.should.have.property('_id');
+          res.body.should.have.property('platform');
+          res.body.should.have.property('gamerId');
+          res.body.should.have.property('game');
+          res.body.gamerId.should.equal('methodd1');
+          res.body.game.should.equal('ESO');
+          res.body.message.should.equal('Let\'s kill shit.');
+          res.body.platform.should.equal(system._id.toString());
+          done();
+        });
+    });
+  });
   it('should update a SINGLE LFG on /lfgs/<id> PUT', function(done) {
     chai.request(server)
       .get('/lfgs')

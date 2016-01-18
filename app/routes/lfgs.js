@@ -66,15 +66,22 @@ module.exports = function(app) {
       return res.status(403).json({ error: 'Submitted empty response' });
     }
 
-    lfg = new req.db.LFG(data);
+    if (data.platform) {
+      app.helpers.platform.findPlatformByIdOrName(data.platform).then(function(platform) {
+        data.platform = platform._id.toString();        
+        lfg = new req.db.LFG(data);
 
-    lfg.save(function(err, doc) {
-      if (err) {
-        return res.status(403).json({ error: err.message });
-      }
+        lfg.save(function(err, doc) {
+          if (err) {
+            return res.status(403).json({ success: false, error: err });
+          }
 
-      res.status(200).json(doc);
-    });
+          res.status(200).json(doc);
+        });
+      }).catch(function(err) {
+        res.status(403).json({ success: false, error: err });
+      });
+    }
   });
 
   /**
