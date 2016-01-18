@@ -41,7 +41,8 @@ module.exports = function(app) {
 
     _.each(options, function(option) {
       if (req.query[option] && req.query[option] !== '') {
-        query[option] = req.query[option];
+        /* If query is a string, convert to RegExp for case insensitive search */
+        query[option] = typeof req.query[option] === 'string' ? new RegExp(req.query[option], 'i') : req.query[option];
       }
     });
 
