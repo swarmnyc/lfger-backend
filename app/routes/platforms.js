@@ -1,12 +1,12 @@
 'use strict';
 const express = require('express');
-const async = require('async');
+// const async = require('async');
 
 module.exports = function(app) {
   const router = express.Router();
 
   router.param('platform', function(req, res, next, id) {
-      req.db.Platform.findById(id).exec(function(err, platform) {
+      app.helpers.platform.findPlatformByIdOrName(id, function(err, platform) {
         if (err) {
           return next(err);
         }

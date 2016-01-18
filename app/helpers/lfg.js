@@ -6,6 +6,7 @@ const ObjectId = require('mongoose').Types.ObjectId;
 
 const LFGModel = require('../models/lfg');
 const PlatformModel = require('../models/platform');
+const platformHelper = require('./platform');
 
 const LFGHelper = (function() {
 
@@ -32,38 +33,6 @@ const LFGHelper = (function() {
     const query = function(options, callback) {
       let mongoQuery;
 
-      /* Builds query string to avoid typecast errors */
-      const buildSearch = function(searchString) {
-        return new Promise(function(resolve, reject) {
-          let tempId;
-          let tempString;
-
-          /* First check if queryString is a valid ObjectId */
-          if (ObjectId.isValid(searchString)) {
-            tempId = new ObjectId(searchString);
-
-            if (tempId.toString() === searchString) {
-              return resolve({ platform: searchString });
-            }
-          }
-
-          /* Not an ObjectId, so we return an $or statement for name and shortName */
-          /* Set as RegExp for case-insensitive search */
-          tempString = new RegExp(searchString, 'i');
-          PlatformModel.findOne({ $or: [{ name: tempString }, { shortName: tempString }] }).exec(function(err, platform) {
-            if (err) {
-              return reject(err);
-            }
-
-            if (!platform) {
-              return reject(searchString + ' not found');
-            }
-
-            return resolve({ platform: platform._id });
-          });
-        });
-      };
-
       /* Iterates through options object and applies them to the query */
       const applyOpts = function(optValue, optKey, cb) {
         if (typeof optValue !== 'undefined') {
@@ -78,8 +47,8 @@ const LFGHelper = (function() {
         cb();
       };
 
-      buildSearch(searchString).then(function(search) {
-        mongoQuery = LFGModel.find(search);
+      platformHelper.findPlatformByIdOrName(searchString).then(function(platform) {
+        mongoQuery = LFGModel.find({ platform: platform._id });
 
         async.forEachOf(options, applyOpts, function() {
           mongoQuery.exec(callback);

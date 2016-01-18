@@ -5,9 +5,9 @@ const Types = Schema.Types;
 const trackable = require('mongoose-trackable');
 
 let Platform = new Schema({
-  shortName: Types.String,
-  name: Types.String,
-  gamerProfileUrlPrefix: Types.String
+  shortName: { type: Types.String, index: true },
+  name: { type: Types.String, index: true },
+  gamerProfileUrlPrefix: { type: Types.String }
 }).plugin(trackable);
 
 module.exports = mongoose.model('Platform', Platform);

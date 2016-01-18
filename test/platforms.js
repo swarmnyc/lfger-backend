@@ -48,10 +48,47 @@ describe('Platforms', function() {
         });
     });
     it('should list a SINGLE Platform on /platforms/<id> GET', function(done) {
-      let newSystem = platformFactory();
-      newSystem.save().then(function(system) {
+      Platform.findOne().exec(function(err, system) {
       chai.request(server)
         .get('/platforms/' + system._id)
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('object');
+          res.body.should.have.property('_id');
+          res.body.should.have.property('shortName');
+          res.body.should.have.property('name');
+          res.body.should.have.property('gamerProfileUrlPrefix');
+          res.body._id.should.equal(system._id.toString());
+          res.body.shortName.should.equal(system.shortName);
+          res.body.name.should.equal(system.name);
+          done();
+        });
+      });
+    });
+    it('should list a SINGLE Platform on /platforms/<name> GET', function(done) {
+      Platform.findOne().exec(function(err, system) {
+      chai.request(server)
+        .get('/platforms/' + system.name.replace(' ', '-'))
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('object');
+          res.body.should.have.property('_id');
+          res.body.should.have.property('shortName');
+          res.body.should.have.property('name');
+          res.body.should.have.property('gamerProfileUrlPrefix');
+          res.body._id.should.equal(system._id.toString());
+          res.body.shortName.should.equal(system.shortName);
+          res.body.name.should.equal(system.name);
+          done();
+        });
+      });
+    });
+    it('should list a SINGLE Platform on /platforms/<shortName> GET', function(done) {
+      Platform.findOne().exec(function(err, system) {
+        chai.request(server)
+        .get('/platforms/' + system.shortName.replace(' ', '-'))
         .end(function(err, res) {
           res.should.have.status(200);
           res.should.be.json;
