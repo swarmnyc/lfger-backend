@@ -19,7 +19,7 @@ const LFGHelper = (function() {
 
   /**
    * @method
-   * @param {string} queryString - The string of text to query for. Can be either a stringififed ObjectId, platform.name, or platform.shortName
+   * @param {string} searchString - The string of text to query for. Can be either a stringififed ObjectId, platform.name, or platform.shortName
    * @param {object} [options] - An options object
    *  @property {object} [options.sort] - An object
    *  @property {number} [options.limit] - Limit on how many results should be returned. Default is unlimited.
@@ -68,6 +68,7 @@ const LFGHelper = (function() {
       /* Iterates through options object and applies them to the query */
       const applyOpts = function(optValue, optKey, cb) {
         if (typeof optValue !== 'undefined') {
+          /* populate() is a method, not a property, so it's treated differently than other options */
           if (optKey === 'populate') {
             mongoQuery.populate(optValue);
           } else {
