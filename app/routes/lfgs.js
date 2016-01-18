@@ -3,7 +3,7 @@ const express = require('express');
 const async = require('async');
 const _ = require('underscore');
 
-module.exports = function() {
+module.exports = function(app) {
   const router = express.Router();
 
   /**
@@ -24,8 +24,20 @@ module.exports = function() {
    * Get a list of LFGs
    */
   router.get('/', function(req, res) {
+    const renderResponse = function(err, lfgs) {
+      if (err) {
+        return res.status(403).json({ success: false, error: err.message });
+      }
+
+      res.status(200).json(lfgs);
+    };
     let query = {};
     let options = ['game', 'platform', 'gamerId'];
+
+    /* If platform is supplied, then use platform helper query */
+    if (req.query.platform) {
+      return app.helpers.lfg.findLFGsByPlatform(req.query.platform, renderResponse);
+    }
 
     _.each(options, function(option) {
       if (req.query[option] && req.query[option] !== '') {
@@ -33,13 +45,7 @@ module.exports = function() {
       }
     });
 
-    req.db.LFG.find(query).populate('platform').sort({ createdAt: -1 }).exec(function(err, lfgs) {
-      if (err) {
-        return res.status(403).json({ success: false, error: err.message });
-      }
-
-      res.status(200).json(lfgs);
-    });
+    req.db.LFG.find(query).populate('platform').sort(app.LFGER_CONFIG.QUERY_SORT).exec(renderResponse);
   });
 
   /**

@@ -129,6 +129,45 @@ describe('LFGs', function() {
         });
     });
   });
+  it('should list ALL LFGs for a Platform on /lfgs?platform=<platform.name>.toUpperCase() GET', function(done) {
+    Platform.findOne().exec(function(err, platform) {
+      chai.request(server)
+        .get('/lfgs/?platform=' + platform.name.toUpperCase())
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('array');
+          /* TODO: Figure out how to test that platforms match for all elements in array */
+          done();
+        });
+    });
+  });
+  it('should list ALL LFGs for a Platform on /lfgs?platform=<platform.name> GET', function(done) {
+    Platform.findOne().exec(function(err, platform) {
+      chai.request(server)
+        .get('/lfgs/?platform=' + platform.name)
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('array');
+          /* TODO: Figure out how to test that platforms match for all elements in array */
+          done();
+        });
+    });
+  });
+  it('should list ALL LFGs for a Platform on /lfgs?platform=<platform.shortName> GET', function(done) {
+    Platform.findOne().exec(function(err, platform) {
+      chai.request(server)
+        .get('/lfgs/?platform=' + platform.shortName)
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('array');
+          /* TODO: Figure out how to test that platforms match for all elements in array */
+          done();
+        });
+    });
+  });
   it('should list a SINGLE LFG on /lfg/<id> GET', function(done) {
     LFG.findOne().populate('platform').exec(function(err, lfg) {
       chai.request(server)

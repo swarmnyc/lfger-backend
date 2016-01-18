@@ -34,6 +34,8 @@ app.logger = new (winston.Logger)({
   ]
 });
 
+app.LFGER_CONFIG = require(path.resolve(__dirname, 'lib', 'config'));
+
 /* Connect to MongoDB */
 const connect = function() {
   let options = { server: { socketOptions: { keepAlive: 1 } } };
@@ -95,6 +97,23 @@ const bindModels = function(app) {
   });
 };
 
+/* Bind helper methods to app object */
+const bindHelpers = function(app) {
+  const helpersPath = path.resolve(__dirname, 'helpers');
+  let files = fs.readdirSync(helpersPath);
+
+  app.helpers = {};
+
+  files.forEach(function(file) {
+    if (path.extname(file) !== '.js') {
+      return;
+    }
+
+    app.logger.info('Binding helper ' + lfgUtils.toCamelCase(path.basename(file, '.js')) + '...');
+    app.helpers[lfgUtils.toCamelCase(path.basename(file, '.js'))] = require(path.resolve(helpersPath, file));
+  });
+};
+
 const applyUpdates = function(app) {
   const updatesPath = path.resolve(__dirname, 'update');
   let files = fs.readdirSync(updatesPath);
@@ -142,6 +161,7 @@ app.use(session({ secret: 'asdjflkajsdfkljalkvjalkdjfeowrj34u9-4iojlsdfljk', sto
 app.passport = require(path.resolve(__dirname, 'lib', 'passport'))(app);
 
 bindModels(app);
+bindHelpers(app);
 bindMiddleware(app);
 
 app.use(app.middleware.db);
