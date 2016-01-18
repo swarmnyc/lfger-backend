@@ -33,7 +33,7 @@ module.exports = function() {
       }
     });
 
-    req.db.LFG.find(query).populate('platform').exec(function(err, lfgs) {
+    req.db.LFG.find(query).populate('platform').sort({ createdAt: -1 }).exec(function(err, lfgs) {
       if (err) {
         return res.status(403).json({ success: false, error: err.message });
       }

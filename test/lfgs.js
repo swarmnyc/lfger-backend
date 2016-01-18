@@ -105,13 +105,14 @@ const generateTestData = function() {
 
 describe('LFGs', function() {
 
-  it('should list ALL LFGs on /lfgs GET', function(done) {
+  it('should list ALL LFGs sorted newest to oldest on /lfgs GET', function(done) {
     chai.request(server)
       .get('/lfgs')
       .end(function(err, res) {
         res.should.have.status(200);
         res.should.be.json;
         res.body.should.be.a('array');
+        res.body[0].createdAt.should.be.above(res.body[1].createdAt);
         done();
       });
   });
