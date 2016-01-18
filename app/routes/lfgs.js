@@ -68,7 +68,7 @@ module.exports = function(app) {
 
     if (data.platform) {
       app.helpers.platform.findPlatformByIdOrName(data.platform).then(function(platform) {
-        data.platform = platform._id.toString();        
+        data.platform = platform._id.toString();
         lfg = new req.db.LFG(data);
 
         lfg.save(function(err, doc) {
@@ -117,10 +117,12 @@ module.exports = function(app) {
    * Remove LFG
    */
   router.delete('/:lfg', function(req, res) {
-    req.models.lfg.remove().then(function() {
-      res.status(200).json({ success: true });
-    }).catch(function(err) {
-      res.status(403).json({ success: false, error: err.message });
+    req.models.lfg.remove(function(err) {
+      if (err) {
+        return res.status(403).json({ success: false, error: err.message });
+      }
+
+      return res.status(200).json({ success: true });          
     });
   });
 

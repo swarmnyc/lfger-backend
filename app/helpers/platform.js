@@ -33,7 +33,7 @@ const PlatformHelper = (function() {
       /* Not an ObjectId, so we return an $or statement for name and shortName */
       /* Set as RegExp for case-insensitive search */
       if (!searchObject) {
-        tempString = new RegExp(searchString.replace('-', ' '), 'i');
+        tempString = new RegExp(searchString.replace('-', ' '), 'i');        
         searchObject = { $or: [{ name: tempString }, { shortName: tempString }]};
       }
 
