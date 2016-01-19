@@ -12,7 +12,7 @@
   },
   "respository": {
     "type": "git",
-    "url": "https://github.com/joeyfromspace/lfger-backend.git"
+    "url": "https://github.com/swarmnyc/lfger-backend.git"
   },
   "dependencies": {
     "async": "1.5.2",
