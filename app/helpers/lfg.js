@@ -1,7 +1,6 @@
 'use strict';
 const _ = require('underscore');
-const async = require('async');
-const lfgUtils = require('../libs/utils');
+const lfgUtils = require('../lib/utils');
 const LFGER_CONFIG = require('../lib/config');
 
 const LFGModel = require('../models/lfg');
@@ -35,7 +34,7 @@ const LFGHelper = (function() {
       platformHelper.findPlatformByIdOrName(searchString).then(function(platform) {
         mongoQuery = LFGModel.find({ platform: platform._id });
 
-        lfgUtils.applyOpts(mongoQuery, options, function(err, mongoQuery) {
+        lfgUtils.applyQueryOptions(mongoQuery, options, function(err, mongoQuery) {
           if (err) {
             return callback(err);
           }
@@ -79,7 +78,7 @@ const LFGHelper = (function() {
   };
 
   LFGHelper.prototype.groupByGame = function(sortDirection, callback) {
-    
+
     LFGModel.aggregate([
       { $group: {
           _id: 'game',
