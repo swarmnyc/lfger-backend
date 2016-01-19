@@ -1,11 +1,10 @@
 'use strict';
 const _ = require('underscore');
 const async = require('async');
+const lfgUtils = require('../libs/utils');
 const LFGER_CONFIG = require('../lib/config');
-const ObjectId = require('mongoose').Types.ObjectId;
 
 const LFGModel = require('../models/lfg');
-const PlatformModel = require('../models/platform');
 const platformHelper = require('./platform');
 
 const LFGHelper = (function() {
@@ -33,24 +32,13 @@ const LFGHelper = (function() {
     const query = function(options, callback) {
       let mongoQuery;
 
-      /* Iterates through options object and applies them to the query */
-      const applyOpts = function(optValue, optKey, cb) {
-        if (typeof optValue !== 'undefined') {
-          /* populate() is a method, not a property, so it's treated differently than other options */
-          if (optKey === 'populate') {
-            mongoQuery.populate(optValue);
-          } else {
-            mongoQuery.options[optKey] = optValue;
-          }
-        }
-
-        cb();
-      };
-
       platformHelper.findPlatformByIdOrName(searchString).then(function(platform) {
         mongoQuery = LFGModel.find({ platform: platform._id });
 
-        async.forEachOf(options, applyOpts, function() {
+        lfgUtils.applyOpts(mongoQuery, options, function(err, mongoQuery) {
+          if (err) {
+            return callback(err);
+          }
           mongoQuery.exec(callback);
         });
       }).catch(callback);
@@ -88,6 +76,23 @@ const LFGHelper = (function() {
     } else {
       query(options, callback);
     }
+  };
+
+  LFGHelper.prototype.groupByGame = function(sortDirection, callback) {
+    
+    LFGModel.aggregate([
+      { $group: {
+          _id: 'game',
+          count: { $sum: 1 }
+      }},
+      { $project: {
+          lfgs: '$_id',
+          count: 1,
+          _id: 0
+      }},
+      { $sort: {
+          'lfgs': sortDirection
+    }}], callback);
   };
 
   return LFGHelper;

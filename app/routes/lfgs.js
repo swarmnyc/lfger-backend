@@ -1,7 +1,6 @@
 'use strict';
 const express = require('express');
 const async = require('async');
-const _ = require('underscore');
 
 module.exports = function(app) {
   const router = express.Router();
@@ -63,7 +62,7 @@ module.exports = function(app) {
     let lfg;
 
     if (!data) {
-      return res.status(403).json({ error: 'Submitted empty response' });
+      return res.status(403).json({ error: 'Empty request' });
     }
 
     if (data.platform) {
@@ -122,7 +121,7 @@ module.exports = function(app) {
         return res.status(403).json({ success: false, error: err.message });
       }
 
-      return res.status(200).json({ success: true });          
+      return res.status(200).json({ success: true });
     });
   });
 
