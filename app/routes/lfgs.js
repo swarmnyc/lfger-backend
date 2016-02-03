@@ -62,25 +62,28 @@ module.exports = function(app) {
     let lfg;
 
     if (!data) {
-      return res.status(403).json({ error: 'Empty request' });
+      return res.status(403).json({ success: false, error: 'Empty request' });
     }
 
-    if (data.platform) {
-      app.helpers.platform.findPlatformByIdOrName(data.platform).then(function(platform) {
-        data.platform = platform._id.toString();
-        lfg = new req.db.LFG(data);
+    /* Platform is required. Return error if not provided. */
+    if (!data.platform) {
+      return res.status(403).json({ success: false, error: 'Missing platform'});
+    }
 
-        lfg.save(function(err, doc) {
-          if (err) {
-            return res.status(403).json({ success: false, error: err });
-          }
+    app.helpers.platform.findPlatformByIdOrName(data.platform).then(function(platform) {
+      data.platform = platform._id.toString();
+      lfg = new req.db.LFG(data);
 
-          res.status(200).json(doc);
-        });
-      }).catch(function(err) {
-        res.status(403).json({ success: false, error: err });
+      lfg.save(function(err, doc) {
+        if (err) {
+          return res.status(403).json({ success: false, error: err });
+        }
+
+        res.status(200).json(doc);
       });
-    }
+    }).catch(function(err) {
+      res.status(403).json({ success: false, error: err });
+    });
   });
 
   /**
@@ -104,7 +107,7 @@ module.exports = function(app) {
 
       lfg.save(function(err, doc) {
         if (err) {
-          return res.status(403).json({ error: err.message });
+          return res.status(403).json({ success: false, error: err.message });
         }
 
         res.status(200).json(doc);
