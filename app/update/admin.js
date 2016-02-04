@@ -1,14 +1,15 @@
 'use strict';
 
-const AdminUser = require('../models/admin-user');
+const User = require('../models/user');
 
 module.exports = function(done) {
   let data = {
     name: 'Default Admin',
     email: 'dev@swarmnyc.com',
-    password: 'admin!'
+    password: 'admin!',
+    role: 'admin'
   };
 
-  let admin = new AdminUser(data);
+  let admin = new User(data);
   admin.save(done);
 };

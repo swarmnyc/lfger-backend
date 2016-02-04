@@ -45,7 +45,7 @@ module.exports = function(app) {
   /**
    * Create a new LFG
    */
-  router.post('/', app.middleware.auth.bearer, function(req, res) {
+  router.post('/', function(req, res) {
     let data = req.body;
     let lfg;
 
@@ -67,7 +67,7 @@ module.exports = function(app) {
   /**
    * Get a specific LFG
    */
-  router.get('/:lfg', app.middleware.auth.bearer, function(req, res) {
+  router.get('/:lfg', function(req, res) {
     return res.status(200).json(req.models.lfg);
   });
 
@@ -96,7 +96,7 @@ module.exports = function(app) {
   /**
    * Remove LFG
    */
-  router.delete('/:lfg', app.middleware.auth.bearer, function(req, res) {
+  router.delete('/:lfg', function(req, res) {
     req.models.lfg.remove().then(function() {
       res.status(200).json({ success: true });
     }).catch(function(err) {

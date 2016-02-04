@@ -8,14 +8,15 @@ const should = chai.should();
 
 const Platform = require('../app/models/platform');
 const LFG = require('../app/models/lfg');
-const AdminUser = require('../app/models/admin-user');
+const User = require('../app/models/user');
 
 const adminUserFactory = function() {
   return new Promise(function(resolve, reject) {
-    let user = new AdminUser({
+    let user = new User({
       name: 'John Doe',
       email: 'admin@lfger.com',
-      password: 'supercool'
+      password: 'supercool',
+      role: 'admin'
     });
 
     user.save(function(err, doc) {

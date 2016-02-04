@@ -29,7 +29,8 @@ const generateTestData = function() {
     const generateUser = function() {
       return new Promise(function(_resolve, _reject) {
         let user = new User({
-          email: faker.internet.email()
+          email: faker.internet.email(),
+          password: faker.internet.password()
         });
 
         user.save(function(err) {
@@ -62,18 +63,20 @@ const generateTestData = function() {
 };
 
 describe('Users', function() {
-  it('should create one new user on /users POST', function(done) {
-    let randomEmail = faker.internet.email();
+  it('should create one new user with role user on /users POST', function(done) {
+    let data = { email: faker.internet.email(), password: faker.internet.password(), role: 'user' };
     chai.request(server)
       .post('/users')
-      .send({ email: randomEmail })
+      .send(data)
       .end(function(err, res) {
         res.should.have.status(200);
         res.should.be.json;
         res.body.should.be.a('object');
         res.body.should.have.property('_id');
         res.body.should.have.property('email');
-        res.body.email.should.equal(randomEmail);
+        res.body.should.have.property('role');
+        res.body.email.should.equal(data.email);
+        res.body.role.should.equal('user');
         done();
       });
   });

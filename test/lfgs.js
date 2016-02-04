@@ -12,7 +12,7 @@ const faker = require('faker');
 const models = {
   Platform: require('../app/models/platform'),
   LFG: require('../app/models/lfg'),
-  AdminUser: require('../app/models/admin-user')
+  User: require('../app/models/user')
 };
 
 
@@ -24,8 +24,7 @@ const generateTestData = function() {
   return new Promise(function(resolve, reject) {
     const clearData = function() {
       return new Promise(function(_resolve, _reject) {
-        const iterateModels = ['Platform', 'LFG', 'AdminUser'];
-        async.each(iterateModels, function(model, callback) {
+        async.forEachOf(models, function(v, model, callback) {
           models[model].remove({}).exec(callback);
         }, function(err) {
           if (err) {
@@ -85,10 +84,11 @@ const generateTestData = function() {
     };
     const generateAdminUser = function() {
       return new Promise(function(_resolve, _reject) {
-        let user = new models.AdminUser({
+        let user = new models.User({
           name: faker.name.findName(),
           email: faker.internet.email(),
-          password: faker.internet.password()
+          password: faker.internet.password(),
+          role: 'admin'
         });
 
         user.save(function(err) {
@@ -124,7 +124,7 @@ const generateTestData = function() {
 describe('LFGs', function() {
   let user;
   before(function(done) {
-    models.AdminUser.findOne().exec(function(err, admin) {
+    models.User.find({ role: 'admin' }).limit(1).exec(function(err, admin) {
       user = admin;
       done();
     });
