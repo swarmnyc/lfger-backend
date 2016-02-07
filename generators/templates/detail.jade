@@ -1,0 +1,15 @@
+include './mixins'
+
+doctype html
+html
+  head
+    title=title + ' Admin'
+  body
+    .container
+      .row: .col-xs-12: h1=title
+      form.form-inline
+        each input in inputs
+          +form-input(input)    
+        .row: .col-xs-12
+          button.btn.btn-primary(type="submit" name="submit") Save
+          button.btn.btn-default(type="cancel" name="cancel") Cancel

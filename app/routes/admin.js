@@ -13,10 +13,10 @@ module.exports = function(app) {
     let adminUser;
 
     if (!data) {
-      return res.status(403).json({ success: false, error: 'Empty request body' });
+      return res.status(403).json({ success: false, error: 'Empty request' });
     }
 
-    adminUser = new req.db.AdminUser(data);
+    adminUser = new req.db.User(data);
     adminUser.save(function(err, doc) {
       if (err) {
         app.logger.error(err);

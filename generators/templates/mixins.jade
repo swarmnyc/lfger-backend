@@ -1,0 +1,11 @@
+mixin form-input(input)
+  .row
+    case input.type
+      when 'text'
+        .col-xs-12.col-md-3: label=input.label
+        .col-xs-12.col-md-9: input.form-control(type="text" name=input.name)
+      when 'checkbox'
+        .col-xs-12
+          .checkbox
+            label
+              input(type="checkbox" name=input.name)=input.label

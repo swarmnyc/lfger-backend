@@ -23,7 +23,7 @@ module.exports = function(app) {
   /**
    * Get a list of LFGs
    */
-  router.get('/', app.middleware.auth.bearer, function(req, res) {
+  router.get('/', function(req, res) {
     let query = {};
     let options = ['game', 'platform', 'gamerId'];
 
@@ -78,8 +78,8 @@ module.exports = function(app) {
     let data = req.body;
     let lfg = req.models.lfg;
 
-    async.each(Object.keys(data), function(key, callback) {
-      lfg[key] = data[key];
+    async.forEachOf(data, function(value, key, callback) {
+      lfg[key] = value;
       callback();
     }, function() {
 
