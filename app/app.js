@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
 const debug = require('debug')('lfger-backend');
 const lfgUtils = require(path.resolve(__dirname, 'lib', 'utils'));
 const winston = require('winston');
+const admin = require(path.join(__dirname, '..', 'admin', 'index'));
 
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
   require('dotenv').load();
@@ -147,6 +148,7 @@ bindMiddleware(app);
 app.use(app.middleware.db);
 bindRoutes(app);
 applyUpdates(app);
+app.use('/admin', admin({ authMiddlewareFn: app.middleware.ensureAdmin }));
 
 app.get('/', function(req, res) {
   res.render('index');

@@ -1,9 +1,10 @@
 'use strict';
 
-const fs      =   require('fs');
-const path    =   require('path');
-const async   =   require('async');
-const jade    =   require('jade');
+const fs        =   require('fs');
+const path      =   require('path');
+const async     =   require('async');
+const jade      =   require('jade');
+const pluralize =   require('pluralize');
 
 const CONFIG  =   require('./config');
 
@@ -92,6 +93,10 @@ exports.toProperCase = function(input) {
     }
     return ' ' + n;
   });
+};
+
+exports.pluralize = function(input) {
+  return pluralize(input);
 };
 
 exports.log = function(message) {

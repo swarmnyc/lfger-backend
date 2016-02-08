@@ -1,0 +1,21 @@
+extends ./layout
+
+block content
+  .container
+    .row: .col-xs-12: h1=title
+    .row: .col-xs-12
+      table.table
+        each member, index in collection
+          if index === 0
+            tr
+              th='id'
+              each value, key in member
+                if key !== 'id'
+                  th=key          
+            tr
+              td: a(href=title + '/' + member.id)=member.id
+              each value, key in member
+                if key !==id
+                  td=value
+    .row: .col-xs-12
+      button.btn.btn-primary.btn-lg &plus; Add New

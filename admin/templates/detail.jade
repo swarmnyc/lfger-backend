@@ -1,0 +1,15 @@
+extends ./layout
+
+block content
+  .container
+    .row: .col-xs-12
+      h1=title
+    .row: .col-xs-12
+      h2=model.name || model.title || model.label
+        small.right=model._id.toString()
+    form.form-inline
+      each input in inputs
+        +form-input(input, model)
+      .row: .col-xs-12
+        button.btn.btn-primary(type="submit" name="submit") Save
+        button.btn.btn-default(type="cancel" name="cancel") Cancel
