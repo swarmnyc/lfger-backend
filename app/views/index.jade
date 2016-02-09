@@ -1,5 +1,11 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  .container
+    .row: .col-xs-12: h1 &nbsp;
+    .row: .col-xs-12: .col-xs-12.col-md-2.col-md-offset-5
+      if loggedInUser && loggedInUser.isAdmin
+        p.text-center LFGer Admin Site
+        a.btn.btn-primary.btn-block.center-block(href="/admin") Open
+      else
+        p.text-center Nothing to see here

@@ -12,7 +12,8 @@ const mongoose = require('mongoose');
 const debug = require('debug')('lfger-backend');
 const lfgUtils = require(path.resolve(__dirname, 'lib', 'utils'));
 const winston = require('winston');
-const admin = require(path.join(__dirname, '..', 'admin', 'index'));
+const admin = require('administrate');
+const flash = require('connect-flash');
 
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
   require('dotenv').load();
@@ -140,16 +141,23 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: 'asdjflkajsdfkljalkvjalkdjfeowrj34u9-4iojlsdfljk', store: redis, resave: false, saveUninitialized: false }));
+app.use(flash());
 app.passport = require(path.resolve(__dirname, 'lib', 'passport'))(app);
 
 bindModels(app);
 bindMiddleware(app);
 
 app.use(app.middleware.db);
+app.use(app.middleware.bindUser);
 bindRoutes(app);
 applyUpdates(app);
-app.use('/admin', admin({ authMiddlewareFn: app.middleware.ensureAdmin, appName: 'LFGer', logoutLink: '/logout', customListColumns: {
-  user: ['createdAt', 'updatedAt', 'id', 'name', 'email', 'role']
+app.use('/admin', admin({
+  authMiddlewareFn: app.middleware.ensureAdmin,
+  appName: 'LFGer',
+  logoutLink: '/logout',
+  customListColumns: {
+    user: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt'],
+    platform: ['id', 'name', 'shortName', 'createdAt', 'updatedAt']
 }}));
 
 app.get('/', function(req, res) {

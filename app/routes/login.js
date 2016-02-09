@@ -8,7 +8,7 @@ module.exports = function(app) {
       res.redirect('/');
   });
 
-  router.get('/', function(req, res) {
+  router.get('/', app.middleware.flash, function(req, res) {    
     res.render('admin/index');
   });
 

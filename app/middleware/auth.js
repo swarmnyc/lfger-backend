@@ -3,7 +3,7 @@
 module.exports = function(app) {
   return {
     local: [
-      app.passport.authenticate('local', { failureRedirect: '/login' }), function(req, res, next) {
+      app.passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), function(req, res, next) {
         return next();
       }
     ],
