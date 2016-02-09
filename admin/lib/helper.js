@@ -86,10 +86,13 @@ exports.toCamelCase = function(input) {
 };
 
 exports.toProperCase = function(input) {
-  input.charAt(0).toUpperCase();
-  return input.replace(/([A-Z])/g, (match, n, offset) => {
+  input = input.charAt(0).toUpperCase() + input.substr(1);
+  return input.replace(/([A-Z]|\.[A-z])/g, (match, n, offset) => {
     if (offset === 0) {
       return n;
+    }
+    if (n.charAt(0) === '.') {
+      return ' ' + n.charAt(1).toUpperCase();
     }
     return ' ' + n;
   });

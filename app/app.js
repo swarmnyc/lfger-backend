@@ -148,7 +148,9 @@ bindMiddleware(app);
 app.use(app.middleware.db);
 bindRoutes(app);
 applyUpdates(app);
-app.use('/admin', admin({ authMiddlewareFn: app.middleware.ensureAdmin }));
+app.use('/admin', admin({ authMiddlewareFn: app.middleware.ensureAdmin, appName: 'LFGer', logoutLink: '/logout', customListColumns: {
+  user: ['createdAt', 'updatedAt', 'id', 'name', 'email', 'role']
+}}));
 
 app.get('/', function(req, res) {
   res.render('index');

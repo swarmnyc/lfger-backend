@@ -27,6 +27,7 @@
     "foreman": "1.4.1",
     "helmet": "1.1.0",
     "jade": "1.11.0",
+    "moment": "2.11.2",
     "mongoose": "4.3.6",
     "mongoose-trackable": "0.3.0",
     "morgan": "~1.6.1",

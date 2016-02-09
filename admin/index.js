@@ -2,13 +2,15 @@
 
 /**
  * Generic Admin Interface
- * For Express 4 and MongoDB/Mongoose Apps
+ * For Express 4.x and MongoDB/Mongoose Apps
  *
- * Setup as middleware
+ * Setup as middleware in your express application.
+ * Example: app.use('/admin', require('administrator'));
  */
 
  /* Begin Dependencies */
  const CONFIG     =     require('./lib/config');
+ const helper     =     require('./lib/helper');
  const pluralize  =     require('pluralize');
  const _          =     require('underscore');
  const async      =     require('async');
@@ -16,6 +18,7 @@
  const jade       =     require('jade');
  const path       =     require('path');
  const fs         =     require('fs');
+ const moment     =     require('moment');
  /* End Dependencies */
 
 const Administrate  = (function() {
@@ -26,6 +29,7 @@ const Administrate  = (function() {
         bindRoutes: function(router, context) {
           this.options = context.getOptions();
           router.all('*', this.options.authMiddlewareFn);
+          router.all('*', express.static(path.join(__dirname, 'assets')));
           router.all('*', _private.setupRequest);
           router.get('/', _private.routes.home);
           router.param('model', _private.getModel);
@@ -54,21 +58,18 @@ const Administrate  = (function() {
                 return next(err);
               }
 
-              req.params.id = doc._id.toString();
-              res.locals.model = doc;
-              res.locals.messages.push({ type: 'success', message: 'New ' + req.admin.Model.modelName + ' created successfully'});
-              _private.routes.detail(req, res, next);
+              res.json(doc);
             });
           },
           detail: function(req, res) {
+            res.locals.inputs = {};
             async.forEachOf(req.admin.Model.schema.paths, (path, name, done) => {
               let type;
 
-              if (name === '__v') {
+              if (_private.options.pathBlacklist.indexOf(name) >= 0) {
                 return done();
               }
-
-              switch (path.options.type) {
+              switch (path.options.type.schemaName) {
                 case 'String':
                   type = 'text';
                   break;
@@ -78,9 +79,15 @@ const Administrate  = (function() {
                 case 'Boolean':
                   type = 'checkbox';
                   break;
-                case 'Date':
-                  type = 'date';
-                  break;
+                case 'ObjectId':
+                  console.log(path);
+                break;
+                case undefined:
+                  if (path.instance === 'Date') {
+                    type = 'date';
+                  }
+                break;
+
                 default:
                   break;
               }
@@ -91,6 +98,7 @@ const Administrate  = (function() {
               res.locals.inputs[name] = { type: type, label: name,  name: name };
               done();
             }, () => {
+              res.locals.active = pluralize(req.admin.Model.modelName, 2);
               res.send(_private.render('detail', res.locals));
             });
 
@@ -100,7 +108,7 @@ const Administrate  = (function() {
             res.send(_private.render('errors', res.locals));
           },
           home: function(req, res) {
-            res.locals.models = _.pluck(_private.models, 'modelName');
+            res.locals.title = res.locals.appName;
             res.send(_private.render('home', res.locals));
           },
           index: function(req, res, next) {
@@ -111,44 +119,40 @@ const Administrate  = (function() {
                   return next(err);
                 }
 
-                res.locals.collection = _.map(results, (result) => {
-                  return _.pick(result, function(value, key) {
-                    const blacklist = ['isNew', 'errors', 'db', 'discriminators', 'schema', 'collection'];
-                    return key.charAt(0) !== '_' && key.charAt(0) !== '$' && typeof value !== 'function' && blacklist.indexOf(key) === -1;
+                res.locals.collection =_.map(results, (result) => {
+                  return  _.mapObject(_.pick(result, function(value, key) {
+                    return _private.options.customListColumns.hasOwnProperty(req.admin.Model.modelName.toLowerCase()) ? _private.options.customListColumns[req.admin.Model.modelName.toLowerCase()].indexOf(key) >= 0 : (key.charAt(0) !== '_' && key.charAt(0) !== '$' && typeof value !== 'function' && _private.options.pathBlacklist.indexOf(key) === -1);
+                  }), (value, key) => {
+                    console.log(key + ' isDate: ' + _.isDate(value));
+                    if (_.isDate(value)) {
+                      return moment(value).calendar();
+                    }
+                    return value;
                   });
                 });
                 return done();
               });
             };
 
-            const getPaths = function(done) {
-              async.forEachOf(req.admin.Model.schema.paths, function(schemaPath, name, cb) {
-                if (schemaPath.path === '__v') {
-                  return cb();
-                }
-
-                res.locals.paths.push(schemaPath.path);
-                return cb();
-              }, done);
-            };
-
-            res.locals.paths = [];
-            async.parallel([getData, getPaths], (err) => {
+            async.parallel([getData], (err) => {
               if (err) {
                 return next(err);
               }
 
+              res.locals.sortOrder = _private.options.customListColumns.hasOwnProperty(req.admin.Model.modelName.toLowerCase()) ? _private.options.customListColumns[req.admin.Model.modelName.toLowerCase()] : false;
+              res.locals.active = pluralize(req.admin.Model.modelName, 2);
               res.locals.title = pluralize(req.admin.Model.modelName);
               res.send(_private.render('list', res.locals));
             });
           },
           remove: function(req, res, next) {
             let model = res.locals.model;
-            model.remove().then(() => {
-              res.locals.model = undefined;
-              res.locals.messages.push({ type: 'success', message: req.admin.Model.modelName + ' deleted successfully' });
-              _private.routes.index(req, res, next);
-            }).catch(next);
+            model.remove((err) => {
+              if (err) {
+                return next(err);
+              }
+              res.json({ success: true });
+            });
           },
           update: function(req, res, next) {
             let data = req.body;
@@ -167,15 +171,14 @@ const Administrate  = (function() {
                   return next(err);
                 }
 
-                res.locals.model = doc;
-                res.locals.messages.push({ type: 'success', message: 'Save successful' });
-                _private.routes.detail(req, res, next);
+                res.json(doc);
               });
             });
           }
         },
         getDoc: function(req, res, next, id) {
-          if (!id) {
+          if (!id || id === 'new') {
+            res.locals.model = {};
             return next();
           }
           req.admin.Model.findById(id).exec((err, result) => {
@@ -188,7 +191,7 @@ const Administrate  = (function() {
           });
         },
         getModel: function(req, res, next, id) {
-          req.admin.Model = _private.models[pluralize(id, 1)];
+          req.admin.Model = _private.models[pluralize(id.toLowerCase(), 1)];
           res.locals.title = req.admin.Model.modelName;
           return next();
         },
@@ -212,7 +215,7 @@ const Administrate  = (function() {
               }
 
               model = require(path.join(this.options.modelsPath, file));
-              _private.models[model.modelName] = model;
+              _private.models[model.modelName.toLowerCase()] = model;
               modelNames.push(model.schema.modelName);
               return done();
             }, (err) => {
@@ -224,6 +227,19 @@ const Administrate  = (function() {
           return jade.renderFile(path.join(this.options.viewsPath, view + '.jade'), locals);
         },
         setupRequest: function(req, res, next) {
+          res.locals._ = {
+            _: _,
+            moment: moment,
+            pluralize: pluralize,
+            toCamelCase: helper.toCamelCase,
+            toProperCase: helper.toProperCase
+          };
+          res.locals.logoutLink = _private.options.logoutLink;
+          res.locals.active = undefined;
+          res.locals.appName  = _private.options.appName + ' Admin';
+          res.locals.models = _.pluck(_private.models, 'modelName');
+          res.locals.loggedInUser = req.user ? _.omit(req.user, ['password']) : undefined;
+          res.locals.baseUrl = req.baseUrl;
           res.locals.messages = [];
           req.admin = {};
           return next();
@@ -235,6 +251,10 @@ const Administrate  = (function() {
       const defaults = {
         modelsPath: CONFIG.MODELS_PATH,
         viewsPath:  CONFIG.VIEWS_PATH,
+        pathBlacklist: CONFIG.PATH_BLACKLIST,
+        appName: 'SWARM',
+        logoutLink: undefined,
+        customListColumns: {},
         authMiddlewareFn: (req, res, next) => {
           return next();
         }
