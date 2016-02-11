@@ -15,7 +15,7 @@
     "url": "https://github.com/joeyfromspace/lfger-backend.git"
   },
   "dependencies": {
-    "administrate": "0.3.6",
+    "administrate": "0.4.0",
     "async": "1.5.2",
     "bcrypt": "0.8.5",
     "body-parser": "~1.13.2",

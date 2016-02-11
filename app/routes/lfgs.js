@@ -50,7 +50,7 @@ module.exports = function(app) {
     let lfg;
 
     if (!data) {
-      return res.status(403).json({ error: 'Submitted empty response' });
+      return res.status(403).json({ error: 'Empty request' });
     }
 
     lfg = new req.db.LFG(data);
