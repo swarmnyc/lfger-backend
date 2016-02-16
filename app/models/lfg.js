@@ -12,7 +12,8 @@ let LFG = new Schema({
   willPostTo: {
     facebook: { type: Types.Boolean, default: false },
     twitter: { type: Types.Boolean, default: false }
-  }
+  },
+  isFlagged: { type: Types.Boolean, default: false }
 }).plugin(trackable);
 
 module.exports = mongoose.model('LFG', LFG);
