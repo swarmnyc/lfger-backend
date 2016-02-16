@@ -25,7 +25,13 @@ module.exports = function(app) {
    */
   router.get('/', function(req, res) {
     let query = {};
-    let options = ['game', 'platform', 'gamerId'];
+    let options = ['game', 'platform', 'gamerId', 'isFlagged'];
+    let pagination = {
+      page: req.query.page || 1,
+      limit: req.query.limit || 20,
+      populate: 'platform',
+      sort: { createdAt: -1 }
+    };
 
     _.each(options, function(option) {
       if (req.query[option] && req.query[option] !== '') {
@@ -33,12 +39,14 @@ module.exports = function(app) {
       }
     });
 
-    req.db.LFG.find(query).populate('platform').sort({ createdAt: -1 }).exec(function(err, lfgs) {
+    query.isDeleted = false;
+
+    req.db.LFG.paginate(query, pagination, function(err, lfgs) {
       if (err) {
         return res.status(403).json({ success: false, error: err.message });
       }
 
-      res.status(200).json(lfgs);
+      res.status(200).json(lfgs.docs);
     });
   });
 

@@ -36,9 +36,11 @@ app.logger = new (winston.Logger)({
   ]
 });
 
+app.logger.info('Starting LFGer API on ' + process.env.NODE_ENV + '...');
+
 /* Connect to MongoDB */
 const connect = function() {
-  let options = { server: { socketOptions: { keepAlive: 1 } } };
+  let options = { server: { socketOptions: { keepAlive: 1 } }, autoIndex: ( process.env.NODE_ENV !== 'production' ? true : false ) };
   mongoose.connect(process.env.NODE_ENV === 'test' ? 'mongodb://127.0.0.1/node-test' : process.env.DATABASE_URL, options);
 };
 mongoose.connection.on('error', debug);

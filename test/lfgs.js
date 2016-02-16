@@ -100,7 +100,7 @@ const generateTestData = function() {
         });
       });
     };
-    let testUnitQuantity = 25;
+    let testUnitQuantity = 30;
     let count = 0;
 
     clearData().then(generateAdminUser().then(generatePlatforms().then(function(platforms) {
@@ -123,6 +123,7 @@ const generateTestData = function() {
 
 describe('LFGs', function() {
   let user;
+  let firstGo;
   before(function(done) {
     models.User.find({ role: 'admin' }).limit(1).exec(function(err, admin) {
       user = admin;
@@ -130,7 +131,7 @@ describe('LFGs', function() {
     });
   });
 
-  it('should list ALL LFGs sorted newest to oldest on /lfgs GET', function(done) {
+  it('should list 20 most recent LFGs sorted newest to oldest on /lfgs GET with bearer token', function(done) {
       chai.request(server)
         .get('/lfgs')
         .set('Authorization', 'Bearer ' + user.bearerToken)
@@ -139,19 +140,92 @@ describe('LFGs', function() {
           res.should.be.json;
           res.body.should.be.a('array');
           res.body[0].createdAt.should.be.above(res.body[1].createdAt);
+          res.body.length.should.equal(20);
+          firstGo = res.body;
           done();
         });
   });
-  it('should list ALL LFGs for a Platform on /lfgs?platform=<platform._id> GET', function(done) {
-    models.Platform.findOne().exec(function(err, platform) {
+  it('should list 20 most recent LFGs sorted newest to oldest on /lfgs GET without bearer token', function(done) {
       chai.request(server)
-        .get('/lfgs/?platform=' + platform._id.toString())
+        .get('/lfgs')
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('array');
+          res.body[0].createdAt.should.be.above(res.body[1].createdAt);
+          res.body.length.should.equal(20);
+          firstGo = res.body;
+          done();
+        });
+  });
+  it('should list page 2 of 20 most recent LFGs sorted newest to oldest on /lfgs GET', function(done) {
+      chai.request(server)
+        .get('/lfgs?page=2')
         .set('Authorization', 'Bearer ' + user.bearerToken)
         .end(function(err, res) {
           res.should.have.status(200);
           res.should.be.json;
           res.body.should.be.a('array');
-          /* TODO: Figure out how to test that platforms match for all elements in array */
+          res.body[0].createdAt.should.be.above(res.body[1].createdAt);
+          res.body.length.should.be.at.most(20);
+          res.body.should.not.deep.equal(firstGo);
+          done();
+        });
+  });
+  it('should list 20 most recent LFGs filtered by GAME on /lfgs?game=<title> GET', function(done) {
+      models.LFG.findOne().exec(function(err, LFG) {
+        let title = LFG.game;
+        chai.request(server)
+          .get('/lfgs?game=' + title)
+          .end(function(err, res) {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.be.a('array');
+            res.body.should.all.have.property('game', title);
+            res.body.length.should.equal(1);
+            done();
+          });
+      });
+  });
+  it('should list up to 20 LFGs for a Platform on /lfgs?platform=<platform._id> GET', function(done) {
+    models.Platform.findOne().exec(function(err, platform) {
+      chai.request(server)
+        .get('/lfgs?platform=' + platform._id.toString())
+        .set('Authorization', 'Bearer ' + user.bearerToken)
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('array');
+          res.body.length.should.be.at.most(20);
+          res.body.should.all.have.deep.property('platform._id', platform._id.toString());
+          done();
+        });
+    });
+  });
+  it('should list up to 20 LFGs for a Platform on /lfgs?platform=<platform.name> GET', function(done) {
+    models.Platform.findOne().exec(function(err, platform) {
+      chai.request(server)
+        .get('/lfgs?platform=' + platform.name)
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('array');
+          res.body.length.should.be.at.most(20);
+          res.body.should.all.have.deep.property('platform.name', platform.name);
+          done();
+        });
+    });
+  });
+  it('should list up to 20 LFGs for a Platform on /lfgs?platform=<platform.shortName> GET', function(done) {
+    models.Platform.findOne().exec(function(err, platform) {
+      chai.request(server)
+        .get('/lfgs?platform=' + platform.shortName)
+        .end(function(err, res) {
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('array');
+          res.body.length.should.be.at.most(20);
+          res.body.should.all.have.deep.property('platform.shortName', platform.shortName);
           done();
         });
     });
