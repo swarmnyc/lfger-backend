@@ -32,21 +32,15 @@ const LFGHelper = (function() {
       let mongoQuery;
 
       platformHelper.findPlatformByIdOrName(searchString).then(function(platform) {
-        mongoQuery = LFGModel.find({ platform: platform._id });
-
-        lfgUtils.applyQueryOptions(mongoQuery, options, function(err, mongoQuery) {
-          if (err) {
-            return callback(err);
-          }
-          mongoQuery.exec(callback);
-        });
+        mongoQuery = LFGModel.paginate({ platform: platform._id }, options, callback);
       }).catch(callback);
     };
 
     let defaults = {
       sort: LFGER_CONFIG.QUERY_SORT,
-      limit: undefined,
-      populate: LFGER_CONFIG.POPULATE_PLATFORMS ? 'platform' : undefined
+      limit: 20,
+      populate: LFGER_CONFIG.POPULATE_PLATFORMS ? 'platform' : undefined,
+      page: 1
     };
 
     if (typeof options === 'function') {

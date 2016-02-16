@@ -1,19 +1,20 @@
 'use strict';
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const AdminUser = require('../models/admin-user');
+const BearerStrategy = require('passport-http-bearer').Strategy;
+const User = require('../models/user');
 
 module.exports = function(app) {
   passport.use(new LocalStrategy(
   function(username, password, callback) {
-      AdminUser.findOne({ email: username }).exec(function(err, user) {
+      User.findOne({ email: username }).exec(function(err, user) {
         if (err) {
           app.logger.error('Validation failed for ' + username + ': ' + err);
           return callback(err);
         }
 
         if (!user) {
-          app.logger.error('Validation failed for ' + username + ': no such user');
+          app.logger.info('Validation failed for ' + username + ': no such user');
           return callback(null, false);
         }
 
@@ -38,7 +39,7 @@ module.exports = function(app) {
   });
 
   passport.deserializeUser(function(id, callback) {
-    AdminUser.findById(id).exec(function(err, user) {
+    User.findById(id).exec(function(err, user) {
       if (err) {
         return callback(err);
       }
@@ -46,6 +47,24 @@ module.exports = function(app) {
       callback(null, user);
     });
   });
+
+  passport.use(new BearerStrategy(
+    function(token, done) {
+      User.find({ bearerToken: token }).limit(1).exec(function(err, user) {
+        if (err) {
+          app.logger.error('Token validation failed: ' + err.message);
+          return done(err);
+        }
+
+        if (!user) {
+          app.logger.info('Token validation failed: Invalid token');
+          return done(null, false);
+        }
+
+        return done(null, user, { scope: 'all' });
+      });
+    }
+  ));
 
   app.use(passport.initialize());
   app.use(passport.session());

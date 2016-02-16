@@ -28,14 +28,20 @@ module.exports = function(app) {
         return res.status(403).json({ success: false, error: err });
       }
 
-      res.status(200).json(lfgs);
+      res.status(200).json(lfgs.docs);
     };
     let query = {};
-    let options = ['game', 'platform', 'gamerId'];
+    let options = ['game', 'platform', 'gamerId', 'isFlagged'];
+    let pagination = {
+      page: req.query.page || 1,
+      limit: req.query.limit || 20,
+      populate: 'platform',
+      sort: app.LFGER_CONFIG.QUERY_SORT
+    };
 
     /* If platform is supplied, then use platform helper query */
     if (req.query.platform) {
-      return app.helpers.lfg.findLFGsByPlatform(req.query.platform, renderResponse);
+      return app.helpers.lfg.findLFGsByPlatform(req.query.platform, pagination, renderResponse);
     }
 
     async.each(options, function(option, cb) {
@@ -50,7 +56,8 @@ module.exports = function(app) {
 
       cb();
     }, function() {
-      req.db.LFG.find(query).populate('platform').sort(app.LFGER_CONFIG.QUERY_SORT).exec(renderResponse);
+      query.isDeleted = false;
+      req.db.LFG.paginate(query, pagination, renderResponse);
     });
   });
 
@@ -96,12 +103,12 @@ module.exports = function(app) {
   /**
    * Update LFG
    */
-  router.put('/:lfg', function(req, res) {
+  router.put('/:lfg', app.middleware.auth.bearer, function(req, res) {
     let data = req.body;
     let lfg = req.models.lfg;
 
-    async.each(Object.keys(data), function(key, callback) {
-      lfg[key] = data[key];
+    async.forEachOf(data, function(value, key, callback) {
+      lfg[key] = value;
       callback();
     }, function() {
 

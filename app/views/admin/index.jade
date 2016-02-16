@@ -2,14 +2,15 @@ extends ../layout
 
 block content
   .container
-    .row: h1 Login
-    .row
-      form(action="/login" method="post")
-        .col-xs-12
-          label Username/Email
-          input(type="text" name="username")
-        .col-xs-12
-          label Password
-          input(type="password" name="password")
-        .col-xs-12
-          input(type="submit" value="Login")
+    .row: .col-xs-12.col-md-offset-2.col-md-10: h1 Login
+    .row: .col-xs-12
+      form.form-horizontal(action="/login" method="post")
+        .form-group
+          label.col-md-2.control-label Username/Email
+          .col-md-10: input.form-control(type="text" name="username")          
+        .form-group
+          label.col-md-2.control-label Password
+          .col-md-10: input.form-control(type="password" name="password")
+        .form-group
+          .col-md-offset-2.col-md-1
+            input.btn-block.btn.btn-primary(type="submit" value="Login")

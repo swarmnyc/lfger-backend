@@ -12,6 +12,8 @@ const mongoose = require('mongoose');
 const debug = require('debug')('lfger-backend');
 const lfgUtils = require(path.resolve(__dirname, 'lib', 'utils'));
 const winston = require('winston');
+const admin = require('administrate');
+const flash = require('connect-flash');
 
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
   require('dotenv').load();
@@ -35,10 +37,11 @@ app.logger = new (winston.Logger)({
 });
 
 app.LFGER_CONFIG = require(path.resolve(__dirname, 'lib', 'config'));
+app.logger.info('Starting LFGer API on ' + process.env.NODE_ENV + '...');
 
 /* Connect to MongoDB */
 const connect = function() {
-  let options = { server: { socketOptions: { keepAlive: 1 } } };
+  let options = { server: { socketOptions: { keepAlive: 1 } }, autoIndex: ( process.env.NODE_ENV !== 'production' ? true : false ) };
   mongoose.connect(process.env.NODE_ENV === 'test' ? 'mongodb://127.0.0.1/node-test' : process.env.DATABASE_URL, options);
 };
 mongoose.connection.on('error', debug);
@@ -158,6 +161,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: 'asdjflkajsdfkljalkvjalkdjfeowrj34u9-4iojlsdfljk', store: redis, resave: false, saveUninitialized: false }));
+app.use(flash());
 app.passport = require(path.resolve(__dirname, 'lib', 'passport'))(app);
 
 bindModels(app);
@@ -165,8 +169,17 @@ bindHelpers(app);
 bindMiddleware(app);
 
 app.use(app.middleware.db);
+app.use(app.middleware.bindUser);
 bindRoutes(app);
 applyUpdates(app);
+app.use('/admin', admin({
+  authMiddlewareFn: app.middleware.ensureAdmin,
+  appName: 'LFGer',
+  logoutLink: '/logout',
+  customListColumns: {
+    user: ['id', 'name', 'email', 'role', 'createdAt', 'updatedAt'],
+    platform: ['id', 'name', 'shortName', 'createdAt', 'updatedAt']
+}}));
 
 app.get('/', function(req, res) {
   res.render('index');
