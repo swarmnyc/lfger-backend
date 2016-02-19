@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
 const debug = require('debug')('lfger-backend');
 const lfgUtils = require(path.resolve(__dirname, 'lib', 'utils'));
 const winston = require('winston');
+const cors = require('cors');
 
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
   require('dotenv').load();
@@ -152,6 +153,14 @@ app.set('view engine', 'jade');
 app.set('env', process.env.NODE_ENV);
 
 app.use(helmet());
+app.use(cors({
+  origin: function(origin, callback) {
+    let whitelisted = (app.LFGER_CONFIG.WHITELISTED_DOMAINS.indexOf(origin) >= 0);
+    return callback(null, whitelisted);
+  },
+  allowedHeaders: ['Authorization', 'Content-Type', 'Origin', 'X-Requested-With', 'Accept']
+}));
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
