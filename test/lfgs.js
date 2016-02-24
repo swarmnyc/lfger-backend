@@ -7,6 +7,7 @@ const chaiThings = require('chai-things');
 const chaiFuzzy = require('chai-fuzzy');
 const server = require('../app/app');
 const async = require('async');
+const _     = require('underscore');
 const faker = require('faker');
 
 const Platform = require('../app/models/platform');
@@ -15,6 +16,9 @@ const LFG = require('../app/models/lfg');
 chai.use(chaiHttp);
 chai.use(chaiThings);
 chai.use(chaiFuzzy);
+
+const lfgs      = [];
+let   comments  = [];
 
 const generateTestData = function() {
   return new Promise(function(resolve, reject) {
@@ -73,11 +77,12 @@ const generateTestData = function() {
           game: faker.commerce.productName(),
           message: faker.lorem.sentence()
         });
-        lfg.save(function(err) {
+        lfg.save(function(err, doc) {
           if (err) {
             return _reject(err);
           }
 
+          lfgs.push(doc);
           return _resolve();
         });
       });
@@ -293,6 +298,44 @@ describe('LFGs', function() {
             response.body.success.should.equal(true);
             done();
           });
+      });
+  });
+});
+
+describe('Comments', function() {
+  this.timeout(5000);
+  it('should post a comment to lfg on /lfgs/<id>/comments POST', function(done) {
+    const _lfg = _.sample(lfgs);
+    chai.request(server)
+      .post('/lfgs/' + _lfg._id.toString() + '/comments')
+      .send({ message: faker.lorem.paragraph(), gamerId: faker.internet.userName() })
+      .end(function(err, res) {
+        res.should.have.status(200);
+        res.should.be.json;
+        res.body.should.be.a('object');
+        res.body.should.have.property('comments');
+        res.body.comments.length.should.equal(1);
+        res.body.should.have.property('_id', _lfg._id.toString());
+        res.body.comments[0].lfgId = _lfg._id;
+        comments = comments.concat(res.body.comments);
+        done();
+      });
+  });
+  it('should list a specific comment on /lfgs/<lfg._id>/comments/<comment._id>', function(done) {
+    const comment   = _.sample(comments);
+    const _lfg      = _.find(lfgs, function(l) {
+      return l._id.equals(comment.lfgId);
+    });
+    chai.request(server)
+      .get('/lfgs/' + _lfg._id.toString() + '/comments/' + comment._id.toString())
+      .end(function(err, res) {
+        res.should.have.status(200);
+        res.should.be.json;
+        res.body.should.be.a('object');
+        res.body.should.have.property('_id', comment._id.toString());
+        res.body.should.have.property('message', comment.message);
+        res.body.should.have.property('gamerId', comment.gamerId);
+        done();
       });
   });
 });

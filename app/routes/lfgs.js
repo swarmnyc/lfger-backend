@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
-const async = require('async');
+const async   = require('async');
+const _       = require('underscore');
 
 module.exports = function(app) {
   const router = express.Router();
@@ -91,6 +92,68 @@ module.exports = function(app) {
    */
   router.get('/:lfg', function(req, res) {
     return res.status(200).json(req.models.lfg);
+  });
+
+  /**
+   * Get all LFG comments (also returned on generic LFG lookup)
+   */
+  router.get('/:lfg/comments', function(req, res) {
+    let lfg = req.models.lfg;
+
+    res.json(lfg.comments);
+  });
+
+  /**
+   * Post comment to LFG
+   */
+  router.post('/:lfg/comments', function(req, res) {
+    let data = req.body;
+    let lfg = req.models.lfg;
+
+    lfg.comments.push(data);
+    lfg.save(function(err, doc) {
+      if (err) {
+        if (err.name === 'ValidationError') {
+          return res.status(403).json({ success: false, error: err });
+        }
+
+        return res.status(500).json({ success: false, error: err });
+      }
+
+      res.status(200).json(doc);
+    });
+  });
+
+  /**
+   * Get comment
+   */
+  router.get('/:lfg/comments/:comment', function(req, res) {
+    let lfg = req.models.lfg;
+    let comment = _.find(lfg.comments, function(c) {
+      return c._id.equals(req.params.comment);
+    });
+
+    if (!comment) {
+      return res.status(404).json({ success: 'false', error: 'Not found' });
+    }
+
+    return res.json(comment);
+  });
+
+  /**
+   * Delete comment
+   */
+  router.delete('/:lfg/comments/:comment', function(req, res) {
+    let lfg = req.models.lfg;
+    lfg.pull(req.params.comment);
+
+    lfg.save(function(err) {
+      if (err) {
+        return res.status(403).json({ success: false });
+      }
+
+      return res.json({ success: true });
+    });
   });
 
   /**
