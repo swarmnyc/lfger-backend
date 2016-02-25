@@ -321,6 +321,25 @@ describe('Comments', function() {
         done();
       });
   });
+  it('should list all comments associated with an lfg on /lfgs/<lfg._id>', function(done) {
+    const comment   = _.sample(comments);
+    const _lfg      = _.find(lfgs, function(l) {
+      return l._id.equals(comment.lfgId);
+    });
+    chai.request(server)
+      .get('/lfgs/' + _lfg._id.toString())
+      .end(function(err, res) {
+        res.should.have.status(200);
+        res.should.be.json;
+        res.body.should.be.a('object');
+        res.body.should.have.property('comments');
+        res.body.comments.should.be.a('array');
+        res.body.comments.length.should.be.gte(1);
+        res.body.comments[0]._id.should.be.equal(comment._id.toString());
+        done();
+      });
+  });
+
   it('should list a specific comment on /lfgs/<lfg._id>/comments/<comment._id>', function(done) {
     const comment   = _.sample(comments);
     const _lfg      = _.find(lfgs, function(l) {
