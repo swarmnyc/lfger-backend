@@ -1,20 +1,20 @@
 'use strict';
-const express = require('express');
-const session = require('express-session');
-const path = require('path');
-const fs = require('fs');
-const _ = require('underscore');
-const logger = require('morgan');
+const express      = require('express');
+const session      = require('express-session');
+const path         = require('path');
+const fs           = require('fs');
+const _            = require('underscore');
+const logger       = require('morgan');
 const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
-const helmet = require('helmet');
-const mongoose = require('mongoose');
-const debug = require('debug')('lfger-backend');
-const lfgUtils = require(path.resolve(__dirname, 'lib', 'utils'));
-const winston = require('winston');
-const admin = require('administrate');
-const flash = require('connect-flash');
-const cors = require('cors');
+const bodyParser   = require('body-parser');
+const helmet       = require('helmet');
+const mongoose     = require('mongoose');
+const debug        = require('debug')('lfger-backend');
+const lfgUtils     = require(path.resolve(__dirname, 'lib', 'utils'));
+const winston      = require('winston');
+const admin        = require('administrate');
+const flash        = require('connect-flash');
+const cors         = require('cors');
 
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
   require('dotenv').load();
@@ -42,7 +42,7 @@ app.logger.info('Starting LFGer API on ' + process.env.NODE_ENV + '...');
 
 /* Connect to MongoDB */
 const connect = function() {
-  let options = { server: { socketOptions: { keepAlive: 1 } }, autoIndex: ( process.env.NODE_ENV !== 'production' ? true : false ) };
+  let options = { server: { socketOptions: { keepAlive: 1 } }};
   mongoose.connect(process.env.NODE_ENV === 'test' ? 'mongodb://127.0.0.1/node-test' : process.env.DATABASE_URL, options);
 };
 mongoose.connection.on('error', debug);
