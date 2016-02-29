@@ -7,7 +7,7 @@ const paginate = require('mongoose-paginate');
 const softDelete = require('mongoose-softer-delete');
 
 let Comment = new Schema({
-  gamerId: { type: Types.String, index: true },
+  gamerId: { type: Types.String, default: 'anonymous', index: true },
   message: { type: Types.String }
 });
 
