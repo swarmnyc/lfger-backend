@@ -16,7 +16,7 @@ Comment.plugin(trackable);
 let LFG = new Schema({
   platform: { type: Types.ObjectId, required: true, ref: 'Platform', index: true },
   game: { type: Types.String, required: true, index: true },
-  gamerId: { type: Types.String, required: true, index: true },
+  gamerId: { type: Types.String, default: 'anonymous', required: true, index: true },
   message: { type: Types.String },
   comments: { type: [Comment] },
   willPostTo: {

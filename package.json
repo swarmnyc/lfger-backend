@@ -2,7 +2,7 @@
   "name": "lfger-backend",
   "version": "1.2.5",
   "engines": {
-    "node": "5.0.0"
+    "node": ">=5.7.0"
   },
   "private": true,
   "scripts": {
