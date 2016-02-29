@@ -435,6 +435,23 @@ describe('Comments', function() {
         done();
       });
   });
+
+  it('should delete a single comment on /lfgs/<lfg._id>/comments/<comment._id>', function(done) {
+    const comment   = _.sample(comments);
+    const _lfg      = _.find(lfgs, function(l) {
+      return l._id.equals(comment.lfgId);
+    });
+    chai.request(server)
+      .delete('/lfgs/' + _lfg._id.toString() + '/comments/' + comment._id.toString())
+      .end(function(err, res) {
+        res.should.have.status(200);
+        res.should.be.json;
+        res.body.should.be.a('object');
+        res.body.should.have.property('success', true);
+        done();
+      });
+  });
+
 });
 
 generateTestData().then(run).catch(function(err) {

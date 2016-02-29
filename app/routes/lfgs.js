@@ -152,7 +152,7 @@ module.exports = function(app) {
    */
   router.delete('/:lfg/comments/:comment', function(req, res) {
     let lfg = req.models.lfg;
-    lfg.pull(req.params.comment);
+    lfg.comments.pull(req.params.comment);
 
     lfg.save(function(err) {
       if (err) {
