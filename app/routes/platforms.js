@@ -16,10 +16,10 @@ module.exports = function(app) {
       });
   });
 
-  router.get('/', function(req, res) {
+  router.get('/', function(req, res, next) {
     req.db.Platform.find().exec(function(err, platforms) {
       if (err) {
-        return res.status(403).json({ error: err.message });
+        return next(err);
       }
 
       res.status(200).json(platforms);

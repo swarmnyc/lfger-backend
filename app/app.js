@@ -1,20 +1,28 @@
 'use strict';
-const express      = require('express');
-const session      = require('express-session');
-const path         = require('path');
-const fs           = require('fs');
-const _            = require('underscore');
-const logger       = require('morgan');
-const cookieParser = require('cookie-parser');
-const bodyParser   = require('body-parser');
-const helmet       = require('helmet');
-const mongoose     = require('mongoose');
-const debug        = require('debug')('lfger-backend');
-const lfgUtils     = require(path.resolve(__dirname, 'lib', 'utils'));
-const winston      = require('winston');
-const admin        = require('administrate');
-const flash        = require('connect-flash');
-const cors         = require('cors');
+const dotenv            = require('dotenv');
+
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.load();
+}
+
+const express           = require('express');
+const session           = require('express-session');
+const path              = require('path');
+const fs                = require('fs');
+const _                 = require('underscore');
+const logger            = require('morgan');
+const cookieParser      = require('cookie-parser');
+const bodyParser        = require('body-parser');
+const helmet            = require('helmet');
+const mongoose          = require('mongoose');
+const lfgUtils          = require(path.resolve(__dirname, 'lib', 'utils'));
+const winston           = require('winston');
+const admin             = require('administrate');
+const flash             = require('connect-flash');
+const cors              = require('cors');
+const NewRelicWinston   = require('newrelic-winston');
+
+
 
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
   require('dotenv').load();
@@ -33,7 +41,8 @@ const redis = new RedisStore({
 app.logger = new (winston.Logger)({
   transports: [
     new (winston.transports.File)({ filename: 'error.log', level: 'error' }),
-    new (winston.transports.Console)({ level: 'info' })
+    new (winston.transports.Console)({ level: 'info' }),
+    new (NewRelicWinston)({ level: 'error' })
   ]
 });
 
@@ -45,7 +54,9 @@ const connect = function() {
   let options = { server: { socketOptions: { keepAlive: 1 } }};
   mongoose.connect(process.env.NODE_ENV === 'test' ? 'mongodb://127.0.0.1/node-test' : process.env.DATABASE_URL, options);
 };
-mongoose.connection.on('error', debug);
+mongoose.connection.on('error', (err) => {
+  app.logger.error(err);
+});
 mongoose.connection.on('disconnected', connect);
 connect();
 

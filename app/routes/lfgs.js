@@ -23,10 +23,10 @@ module.exports = function(app) {
   /**
    * Get a list of LFGs
    */
-  router.get('/', function(req, res) {
+  router.get('/', function(req, res, next) {
     const renderResponse = function(err, lfgs) {
       if (err) {
-        return res.status(403).json({ success: false, error: err });
+        return next(err);
       }
 
       res.status(200).json(lfgs.docs);
@@ -65,7 +65,7 @@ module.exports = function(app) {
   /**
    * Create a new LFG
    */
-  router.post('/', function(req, res) {
+  router.post('/', function(req, res, next) {
     let data = req.body;
     let lfg;
 
@@ -84,7 +84,10 @@ module.exports = function(app) {
 
       lfg.save(function(err, doc) {
         if (err) {
-          return res.status(403).json({ success: false, error: err });
+          if (err.name === 'ValidationError') {
+            return res.status(403).json({ success: false, error: err });
+          }
+          return next(err);
         }
 
         res.status(200).json(doc);
@@ -113,7 +116,7 @@ module.exports = function(app) {
   /**
    * Post comment to LFG
    */
-  router.post('/:lfg/comments', function(req, res) {
+  router.post('/:lfg/comments', function(req, res, next) {
     let data = req.body;
     let lfg = req.models.lfg;
 
@@ -124,7 +127,7 @@ module.exports = function(app) {
           return res.status(403).json({ success: false, error: err });
         }
 
-        return res.status(500).json({ success: false, error: err });
+        return next(err);
       }
 
       res.status(200).json(doc);
@@ -150,13 +153,17 @@ module.exports = function(app) {
   /**
    * Delete comment
    */
-  router.delete('/:lfg/comments/:comment', function(req, res) {
+  router.delete('/:lfg/comments/:comment', function(req, res, next) {
     let lfg = req.models.lfg;
     lfg.comments.pull(req.params.comment);
 
     lfg.save(function(err) {
       if (err) {
-        return res.status(403).json({ success: false });
+        if (err.name === 'ValidationError') {
+          return res.status(403).json({ success: false, error: err.message });
+        }
+
+        return next(err);
       }
 
       return res.json({ success: true });
@@ -166,7 +173,7 @@ module.exports = function(app) {
   /**
    * Update LFG
    */
-  router.put('/:lfg', app.middleware.auth.bearer, function(req, res) {
+  router.put('/:lfg', app.middleware.auth.bearer, function(req, res, next) {
     let data = req.body;
     let lfg = req.models.lfg;
 
@@ -177,7 +184,11 @@ module.exports = function(app) {
 
       lfg.save(function(err, doc) {
         if (err) {
-          return res.status(403).json({ success: false, error: err.message });
+          if (err.name === 'ValidationError') {
+            return res.status(403).json({ success: false, error: err.message });
+          }
+
+          return next(err);
         }
 
         res.status(200).json(doc);
@@ -188,10 +199,10 @@ module.exports = function(app) {
   /**
    * Remove LFG
    */
-  router.delete('/:lfg', function(req, res) {
+  router.delete('/:lfg', function(req, res, next) {
     req.models.lfg.remove(function(err) {
       if (err) {
-        return res.status(403).json({ success: false, error: err.message });
+        return next(err);
       }
 
       return res.status(200).json({ success: true });

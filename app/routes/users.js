@@ -26,7 +26,7 @@ module.exports = function(app) {
   //   });
   // });
 
-  router.post('/', function(req, res) {
+  router.post('/', function(req, res, next) {
     let data = req.body;
     let user;
 
@@ -38,7 +38,11 @@ module.exports = function(app) {
 
     user.save(function(err, doc) {
       if (err) {
-        return res.status(403).json({ success: false, error: err.message });
+        if (err.name === 'ValidationError') {
+          return res.status(403).json({ success: false, error: err.message });
+        }
+
+        return next(err);
       }
 
       res.status(200).json(doc);
