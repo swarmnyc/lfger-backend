@@ -25,7 +25,7 @@ module.exports = function(app) {
           }
 
           if (!isMatch) {
-            app.logger.error('Validation failed for ' + username + ': invalid password');
+            app.logger.info('Validation failed for ' + username + ': invalid password');
             return callback(null, false);
           }
 
